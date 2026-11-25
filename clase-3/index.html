@@ -286,6 +286,14 @@ th { font-weight: 600; color: var(--tertiary); background: var(--surface); }
 .mdchunks { display: flex; flex-direction: column; gap: 12px; }
 .mdck { background: var(--surface); border: 2px solid var(--c); border-radius: 10px; padding: 10px 16px; font-size: 17px; line-height: 1.45; }
 .mdck .path { display: block; font: 600 13px var(--font-code); color: var(--c); margin-bottom: 4px; }
+.qgrid { gap: 18px 24px; }
+.qdemo { align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 16px 14px; border: 1.5px dashed var(--border); border-radius: 10px; background: #FFFFFF; }
+.qc { font-size: 16px; padding: 6px 12px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); text-align: center; }
+.qc.sm { font-size: 14px; padding: 4px 10px; }
+.qc.hit { border-color: var(--primary); background: #FBEDE6; color: #A3421F; font-weight: 600; }
+.qc.hypo { border-style: dashed; border-color: var(--tertiary); background: #F7ECEE; font-size: 14px; line-height: 1.4; }
+.qc.hypo small { display: block; font: 600 11px var(--font-code); letter-spacing: .04em; color: var(--tertiary); margin-bottom: 2px; }
+.qa { font-size: 13px; color: var(--text-muted); }
 .corner { position: absolute; font: 15px var(--font-code); color: var(--text-muted); }
 .corner.mark { width: 36px; height: 36px; border: 0 solid var(--primary); }
 .dots { position: absolute; width: 132px; height: 60px; background: radial-gradient(circle, #D6BFA6 2.5px, transparent 3px) 0 0 / 22px 20px; }
@@ -737,29 +745,64 @@ emb = model.encode([<span class="s">"auto"</span>, <span class="s">"coche"</span
 
 <section class="slide" data-sec="07 · Querying">
   <h2>Mejorar la query</h2>
-  <div class="body cols" style="--n:3">
-    <div class="card"><h3 class="t-primary">Query rewriting</h3><p>Un LLM reescribe la pregunta para que busque mejor.</p><p class="t-muted">"y eso cuánto sale?" → "precio del plan Pro"</p></div>
+  <div class="body cols qgrid" style="--n:3">
+    <div class="card"><h3 class="t-primary">Query rewriting</h3><p>Un LLM reescribe la pregunta para que busque mejor.</p></div>
     <div class="card"><h3 class="t-primary">Multi-query</h3><p>Generar varias versiones, buscar con todas y fusionar resultados.</p></div>
     <div class="card"><h3 class="t-primary">HyDE</h3><p>Generar una respuesta <b>hipotética</b> y buscar con ella: se parece más a los documentos que la pregunta.</p></div>
+    <div class="qdemo">
+      <span class="qc st st2">"y eso cuánto sale?"</span>
+      <span class="qa st st3">↓ el LLM la reescribe con el contexto</span>
+      <span class="qc hit st st4">"precio del plan Pro"</span>
+    </div>
+    <div class="qdemo">
+      <span class="qc st st2">"¿cómo cancelo?"</span>
+      <span class="qa st st3">↓ el LLM genera variantes</span>
+      <span class="qc sm st st4">"dar de baja el plan"</span>
+      <span class="qc sm st st4">"cancelar suscripción"</span>
+      <span class="qc sm st st4">"dejar de pagar"</span>
+      <span class="qa st st5">↓ se busca con cada una y se fusiona</span>
+      <span class="qc hit st st6">top-5 combinado</span>
+    </div>
+    <div class="qdemo">
+      <span class="qc st st2">"¿cómo doy de baja mi plan?"</span>
+      <span class="qa st st3">↓ el LLM imagina una respuesta</span>
+      <span class="qc hypo st st4"><small>respuesta hipotética</small>Para darte de baja, entrá a tu cuenta y cancelá la suscripción…</span>
+      <span class="qa st st5">↓ se busca con ese texto</span>
+      <span class="qc hit st st6">chunk 2 · baja del plan</span>
+    </div>
   </div>
 </section>
 
 <!-- 08 -->
 <section class="slide" data-sec="08 · RAG">
   <h2>RAG (Retrieval-Augmented Generation)</h2>
-  <div class="body cols">
-    <div>
-      <h3 class="t-tertiary">El problema</h3>
-      <ul>
-        <li>El LLM no conoce <b>tus</b> datos.</li>
-        <li>Tiene fecha de corte.</li>
-        <li>Cuando no sabe, alucina.</li>
-      </ul>
+  <div class="body">
+    <!-- Animación: un chunk del documento viaja a su lugar en la ventana de contexto del LLM -->
+    <div class="ctxdemo" aria-label="Un chunk del documento se copia a la ventana de contexto del LLM, junto al system prompt y la pregunta">
+      <div class="doc"><small>manual.pdf · 80 págs.</small><i></i><i></i><i class="hit"></i><i></i><i></i><i></i></div>
+      <div class="ctx-arrow">→<small><b>retrieval</b>: se busca<br>el chunk relevante</small></div>
+      <div class="ctxwin">
+        <span class="lane t-tertiary" style="margin:0">VENTANA DE CONTEXTO DEL LLM</span>
+        <div class="slots"><span class="slot sys">System prompt</span><span class="slot empty"></span><span class="slot q">Pregunta</span><span class="slot free">espacio libre</span></div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="node ter">LLM</div>
+      <div class="mover">chunk 3</div>
     </div>
-    <div class="card key">
-      <h3 class="t-primary">La idea</h3>
-      <p><b>Primero buscar</b> lo relevante y <b>después generar</b> con ese contexto en el prompt.</p>
-      <p>Datos actualizados, citas y control de acceso.</p>
+    <div class="cols">
+      <div>
+        <h3 class="t-tertiary">El problema</h3>
+        <ul class="tight">
+          <li>El LLM no conoce <b>tus</b> datos.</li>
+          <li>Tiene fecha de corte.</li>
+          <li>Cuando no sabe, alucina.</li>
+        </ul>
+      </div>
+      <div class="card key">
+        <h3 class="t-primary">La idea</h3>
+        <p><b>Primero buscar</b> lo relevante y <b>después generar</b> con ese contexto en el prompt.</p>
+        <p>Datos actualizados, citas y control de acceso.</p>
+      </div>
     </div>
   </div>
   <p class="note">Límite: si el retrieval falla, la respuesta falla. <b>Garbage in, garbage out.</b></p>
@@ -1119,22 +1162,6 @@ mcp = MCPServer(<span class="s">"ayuda"</span>)
   <p class="note">Sin MCP: 4 agentes × 3 sistemas = <b>12 conectores</b>. Con MCP: cada sistema se conecta <b>una vez</b> y todos los agentes usan el mismo servidor. Un cambio (otro modelo de embeddings, un permiso) se hace <b>en un solo lugar</b>.</p>
 </section>
 
-<!-- Guardado para más adelante (sección RAG): animación de un chunk entrando a la ventana de contexto del LLM.
-     Para usarla, pegar este bloque dentro del .body de una slide; el CSS (.ctxdemo, chunkfly) y measureChunk() ya están. -->
-<template id="tpl-chunk-a-contexto">
-    <!-- Animación: un chunk del documento viaja a su lugar en la ventana de contexto del LLM -->
-    <div class="ctxdemo" aria-label="Un chunk del documento se copia a la ventana de contexto del LLM, junto al system prompt y la pregunta">
-      <div class="doc"><small>manual.pdf · 80 págs.</small><i></i><i></i><i class="hit"></i><i></i><i></i><i></i></div>
-      <div class="ctx-arrow">→<small>se divide y se recupera<br>el chunk relevante</small></div>
-      <div class="ctxwin">
-        <span class="lane t-tertiary" style="margin:0">VENTANA DE CONTEXTO DEL LLM</span>
-        <div class="slots"><span class="slot sys">System prompt</span><span class="slot empty"></span><span class="slot q">Pregunta</span><span class="slot free">espacio libre</span></div>
-      </div>
-      <span class="arrow">→</span>
-      <div class="node ter">LLM</div>
-      <div class="mover">chunk 3</div>
-    </div>
-</template>
 </main>
 <div id="ui"><button id="prev" aria-label="Slide anterior">←</button><span id="count"></span><button id="next" aria-label="Slide siguiente">→</button></div>
 <script>
