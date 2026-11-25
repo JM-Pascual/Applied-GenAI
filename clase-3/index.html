@@ -395,25 +395,6 @@ th { font-weight: 600; color: var(--tertiary); background: var(--surface); }
   </div>
 </section>
 
-<section class="slide" data-sec="02 · Embeddings">
-  <h2>Propiedades que importan</h2>
-  <div class="body">
-    <div class="s2v">
-      <span class="sent">"El gato duerme en el sillón"</span><span class="arrow">→</span><span class="node vin">encoder</span><span class="arrow">→</span><div class="vec" data-v="a"></div><span class="sim t-muted">referencia</span>
-      <span class="sent">"Un felino descansa en el sofá"</span><span class="arrow">→</span><span class="node vin">encoder</span><span class="arrow">→</span><div class="vec" data-v="b"></div><span class="sim t-primary">cos = 0.91</span>
-      <span class="sent">"La pizza llegó fría"</span><span class="arrow">→</span><span class="node vin">encoder</span><span class="arrow">→</span><div class="vec" data-v="c"></div><span class="sim t-muted">cos = 0.12</span>
-      <span></span><span></span><span></span><span></span><span class="vec-legend">384 dimensiones (se muestran 32) · <span class="t-primary">■</span> positivo <span class="t-tertiary">■</span> negativo</span><span></span>
-    </div>
-    <div class="props">
-      <div><h3>Dimensión</h3><p>Más dimensiones: más capacidad, pero más memoria y cómputo.</p></div>
-      <div><h3>Normalización</h3><p>Con norma 1, el producto punto es la similitud coseno.</p></div>
-      <div class="key"><h3 class="t-primary">Un modelo, un espacio</h3><p>Solo se comparan vectores del <b>mismo modelo</b>.</p></div>
-    </div>
-  </div>
-  <p class="note">El clásico <b>rey − hombre + mujer ≈ reina</b>: las direcciones del espacio codifican relaciones.</p>
-</section>
-
-<!-- 03 -->
 <section class="slide" id="s-enc" data-sec="03 · Sentence Transformers">
   <h2>Modelos Encoder-Only</h2>
   <div class="body arch">
@@ -507,6 +488,25 @@ th { font-weight: 600; color: var(--tertiary); background: var(--surface); }
       </ul>
     </div>
   </div>
+</section>
+
+<!-- 03 -->
+<section class="slide" data-sec="02 · Embeddings">
+  <h2>Propiedades que importan</h2>
+  <div class="body">
+    <div class="s2v">
+      <span class="sent">"El gato duerme en el sillón"</span><span class="arrow">→</span><span class="node vin">encoder</span><span class="arrow">→</span><div class="vec" data-v="a"></div><span class="sim t-muted">referencia</span>
+      <span class="sent">"Un felino descansa en el sofá"</span><span class="arrow">→</span><span class="node vin">encoder</span><span class="arrow">→</span><div class="vec" data-v="b"></div><span class="sim t-primary">cos = 0.91</span>
+      <span class="sent">"La pizza llegó fría"</span><span class="arrow">→</span><span class="node vin">encoder</span><span class="arrow">→</span><div class="vec" data-v="c"></div><span class="sim t-muted">cos = 0.12</span>
+      <span></span><span></span><span></span><span></span><span class="vec-legend">384 dimensiones (se muestran 32) · <span class="t-primary">■</span> positivo <span class="t-tertiary">■</span> negativo</span><span></span>
+    </div>
+    <div class="props">
+      <div><h3>Dimensión</h3><p>Más dimensiones: más capacidad, pero más memoria y cómputo.</p></div>
+      <div><h3>Normalización</h3><p>Con norma 1, el producto punto es la similitud coseno.</p></div>
+      <div class="key"><h3 class="t-primary">Un modelo, un espacio</h3><p>Solo se comparan vectores del <b>mismo modelo</b>.</p></div>
+    </div>
+  </div>
+  <p class="note">El clásico <b>rey − hombre + mujer ≈ reina</b>: las direcciones del espacio codifican relaciones.</p>
 </section>
 
 <section class="slide" data-sec="03 · Sentence Transformers">
