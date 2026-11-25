@@ -278,6 +278,14 @@ th { font-weight: 600; color: var(--tertiary); background: var(--surface); }
 .multi .ms { stroke: #C4532B; stroke-width: 2.5; }
 .multi .ico-u, .multi .ico-r, .multi .ico-db { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .multi .ico-u { stroke: #2E221C; } .multi .ico-r { stroke: #8B3A4A; } .multi .ico-db { stroke: #7A665A; }
+.md { background: #FFFFFF; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 0; font: 15px/1.55 var(--font-code); }
+.md .mdsec { padding: 6px 16px 8px 14px; border-left: 4px solid transparent; }
+.md .mdsec + .mdsec { border-top: 1.5px dashed var(--border); }
+.md .mdsec[class*=" c"] { border-left-color: var(--c); }
+.md .mdh { display: block; font-weight: 600; color: #A3421F; }
+.mdchunks { display: flex; flex-direction: column; gap: 12px; }
+.mdck { background: var(--surface); border: 2px solid var(--c); border-radius: 10px; padding: 10px 16px; font-size: 17px; line-height: 1.45; }
+.mdck .path { display: block; font: 600 13px var(--font-code); color: var(--c); margin-bottom: 4px; }
 .corner { position: absolute; font: 15px var(--font-code); color: var(--text-muted); }
 .corner.mark { width: 36px; height: 36px; border: 0 solid var(--primary); }
 .dots { position: absolute; width: 132px; height: 60px; background: radial-gradient(circle, #D6BFA6 2.5px, transparent 3px) 0 0 / 22px 20px; }
@@ -678,6 +686,30 @@ emb = model.encode([<span class="s">"auto"</span>, <span class="s">"coche"</span
 </section>
 
 <!-- 07 -->
+<section class="slide" data-sec="06 · Chunking">
+  <h2>Ejemplo: chunking por Markdown</h2>
+  <div class="body cols" style="grid-template-columns: 1fr 1.1fr; gap: 40px">
+    <div>
+      <div class="lane t-tertiary">AYUDA.MD · EL DOCUMENTO</div>
+      <div class="md">
+        <div class="mdsec"><span class="mdh">#&nbsp;Centro de ayuda</span></div>
+        <div class="mdsec c1"><span class="mdh">##&nbsp;Facturación</span>Las facturas se emiten el día 1<br>de cada mes y llegan por email.</div>
+        <div class="mdsec c2"><span class="mdh">##&nbsp;Baja del plan</span>Para dar de baja tu plan, entrá a<br>Configuración → Suscripción.</div>
+        <div class="mdsec c3"><span class="mdh">###&nbsp;Reembolsos</span>Si la baja es en los primeros 7 días,<br>te devolvemos el total.</div>
+      </div>
+    </div>
+    <div>
+      <div class="lane t-tertiary">LOS CHUNKS · UNO POR SECCIÓN</div>
+      <div class="mdchunks">
+        <div class="mdck c1 st st2"><span class="path">Centro de ayuda › Facturación</span>Las facturas se emiten el día 1 de cada mes y llegan por email.</div>
+        <div class="mdck c2 st st3"><span class="path">Centro de ayuda › Baja del plan</span>Para dar de baja tu plan, entrá a Configuración → Suscripción.</div>
+        <div class="mdck c3 st st4"><span class="path">Centro de ayuda › Baja del plan › Reembolsos</span>Si la baja es en los primeros 7 días, te devolvemos el total.</div>
+      </div>
+    </div>
+  </div>
+  <p class="note">Se corta en cada encabezado y <b>el camino de headers viaja como metadata</b>: "Reembolsos" sabe que es parte de "Baja del plan". En LangChain: <code>MarkdownHeaderTextSplitter</code>.</p>
+</section>
+
 <section class="slide" id="s-search" data-sec="07 · Querying">
   <h2>Ejemplo: de la pregunta a la documentación</h2>
   <div class="body">
