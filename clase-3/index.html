@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GenAI Aplicado · Clase 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFFFFF;
+  --surface: #FBF6F0;
+  --code-bg: #F6EEE3;
+  --border: #E9DCCB;
+  --text: #2E221C;
+  --text-muted: #7A665A;
+  --primary: #C4532B;
+  --secondary: #E3A13A;
+  --tertiary: #8B3A4A;
+  --font-title: 'Sora', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #EFE7DD; overflow: hidden; }
+body { font-family: var(--font-body); color: var(--text); }
+#deck { position: absolute; top: 50%; left: 50%; width: 1280px; height: 720px; transform-origin: center; }
+.slide { position: absolute; inset: 0; background: var(--bg); padding: 44px 64px 56px; display: flex; flex-direction: column; }
+.slide[hidden] { display: none; }
+.top { display: flex; justify-content: space-between; font-size: 15px; letter-spacing: .04em; color: var(--text-muted); }
+.top .sec { color: var(--primary); font-weight: 500; }
+h1, h2 { font-family: var(--font-title); font-weight: 600; margin: 0; line-height: 1.15; }
+h2 { font-size: 44px; margin-top: 22px; }
+h2::after { content: ""; display: block; width: 64px; height: 4px; background: var(--primary); margin: 18px 0 26px; }
+h3 { font-size: 22px; margin: 0 0 10px; font-weight: 600; }
+p, li { font-size: 22px; line-height: 1.5; }
+ul { margin: 0; padding-left: 26px; }
+li { margin-bottom: 10px; }
+li::marker { color: var(--primary); }
+.body { flex: 1; min-height: 0; }
+.cols { display: grid; grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); gap: 24px; align-items: start; align-content: start; }
+.cols > .card { align-self: stretch; }
+.body:has(+ .card) { flex: 0 0 auto; }
+.body + .card { margin-top: 24px !important; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; }
+.card p, .card li { font-size: 19px; margin: 0 0 6px; }
+.card.key { border-left: 5px solid var(--primary); border-radius: 0 10px 10px 0; }
+.t-primary { color: var(--primary); } .t-tertiary { color: var(--tertiary); } .t-muted { color: var(--text-muted); }
+code, pre { font-family: var(--font-code); font-variant-ligatures: none; }
+.arch-rag .al { font-variant-ligatures: none; }
+code { background: var(--code-bg); padding: 1px 7px; border-radius: 4px; font-size: .88em; }
+pre { background: var(--code-bg); border-radius: 8px; padding: 18px 22px; font-size: 17px; line-height: 1.55; margin: 0; white-space: pre-wrap; }
+pre .s { color: #A3421F; } pre .c { color: var(--text-muted); } pre .k { color: var(--tertiary); }
+.note { margin-top: auto; font-size: 19px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 14px; }
+.note b { color: var(--primary); font-weight: 600; }
+table { border-collapse: collapse; width: 100%; font-size: 19px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-weight: 600; color: var(--tertiary); background: var(--surface); }
+.flow { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; }
+.node { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 17px; text-align: center; white-space: nowrap; }
+.node small { display: block; font-size: 13px; color: var(--text-muted); }
+.node.amb { border-color: var(--secondary); } .node.vin { border-color: var(--tertiary); } .node.ter { border-color: var(--primary); background: #FBEDE6; }
+.arrow { color: var(--text-muted); font-size: 22px; }
+.lane { font-size: 15px; letter-spacing: .06em; font-weight: 600; margin-bottom: 10px; }
+.cover { justify-content: center; padding-left: 96px; }
+.cover h1 { font-size: 72px; }
+.cover h1::after { content: ""; display: block; width: 96px; height: 6px; background: var(--primary); margin: 28px 0; }
+.cover .sub { font-size: 28px; color: var(--text-muted); margin: 0; }
+.cover .topic { font-size: 30px; margin: 40px 0 0; }
+.s2v { display: grid; grid-template-columns: 330px auto auto auto 1fr 120px; gap: 12px 14px; align-items: center; margin-bottom: 30px; }
+.s2v .sent { font-size: 19px; }
+.s2v .sim { font: 500 17px var(--font-code); text-align: right; }
+.vec { display: grid; grid-template-columns: repeat(32, 1fr); gap: 2px; height: 34px; }
+.vec i { border-radius: 2px; }
+.vec-legend { font-size: 14px; color: var(--text-muted); }
+.props { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px; }
+.props > div { border-top: 3px solid var(--border); padding-top: 14px; }
+.props > div.key { border-top-color: var(--primary); }
+.props p { font-size: 19px; margin: 0; }
+.arch { display: grid; grid-template-columns: auto 1fr; gap: 44px; align-items: center; }
+.tf { height: 470px; width: auto; display: block; overflow: visible; }
+.tf text { font: 600 13px var(--font-body); fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+.tf .lbl { font: 500 11px var(--font-code); fill: var(--text-muted); letter-spacing: .08em; text-anchor: start; }
+.tf .ann { font-size: 12px; font-weight: 400; fill: var(--text-muted); }
+.tf .io { font: 500 13px var(--font-code); fill: var(--primary); }
+.tf .lay { fill: var(--surface); stroke: var(--border); }
+.tf .b-att { fill: rgba(139,58,74,.1); stroke: var(--tertiary); stroke-width: 1.5; }
+.tf .b-ff { fill: rgba(227,161,58,.16); stroke: var(--secondary); stroke-width: 1.5; }
+.tf .b-nrm { fill: #FFFFFF; stroke: #B8A595; stroke-width: 1.5; }
+.tf .t-nrm { font-size: 12px; font-weight: 400; fill: var(--text-muted); }
+.tf .b-emb { fill: #FFFFFF; stroke: var(--text-muted); stroke-width: 1.5; }
+.tf .b-out { fill: #FFFFFF; stroke: var(--text); stroke-width: 1.5; }
+.tf .b-pool { fill: rgba(227,161,58,.16); stroke: var(--secondary); stroke-width: 1.5; }
+.tf .b-vec { fill: var(--primary); }
+.tf .ar { stroke: var(--text-muted); stroke-width: 1.6; fill: none; }
+.tf .res { stroke: #B8A595; stroke-width: 1.4; fill: none; }
+.tf .kv { stroke: var(--primary); stroke-width: 2; fill: none; }
+/* encoder-only: el decoder y la cross-attention se apagan al entrar, después aparece el pooling */
+.tf .eo { opacity: 0; transition: opacity .7s ease 1.9s; }
+.tf .dec, .tf .kvl { transition: opacity .9s ease .9s; }
+#s-enc.active .tf .dec { opacity: .1; }
+#s-enc.active .tf .kvl { opacity: 0; }
+#s-enc.active .tf .eo { opacity: 1; }
+.toks { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.toks small { flex-basis: 100%; font-size: 13px; color: var(--text-muted); }
+.tok { font: 500 14px var(--font-code); padding: 5px 7px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
+.tok.sp { background: #FBEDE6; border-color: var(--primary); color: #A3421F; }
+.mat { display: grid; gap: 3px; margin-bottom: 4px; }
+.mat i { display: block; width: 84px; height: 9px; border-radius: 2px; background: rgba(139,58,74,.35); }
+.mat i.one { background: var(--primary); }
+.orbit { position: relative; }
+.orbit-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5; }
+.orb { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; will-change: transform; }
+.orb b { font-size: 21px; font-weight: 600; }
+.orb .logo, .orb .mono { width: 88px; height: 88px; font-size: 38px; }
+.logo { width: 48px; height: 48px; background: var(--text); -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
+.mono { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--text); display: grid; place-items: center; font: 600 22px var(--font-title); }
+.ctxdemo { position: relative; display: grid; grid-template-columns: 190px 190px 1fr auto auto; align-items: center; gap: 16px; margin-bottom: 28px; }
+.doc { background: #FFFFFF; border: 1.5px solid var(--border); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; height: 190px; }
+.doc small { font: 12px var(--font-code); color: var(--text-muted); }
+.doc i { display: block; height: 18px; border-radius: 3px; background: var(--code-bg); }
+.doc i.hit { background: #FBEDE6; outline: 2px solid var(--primary); }
+.ctx-arrow { text-align: center; font-size: 30px; color: var(--text-muted); line-height: 1; }
+.ctx-arrow small { display: block; font-size: 14px; line-height: 1.4; margin-top: 8px; }
+.ctxwin { border: 2px solid var(--tertiary); border-radius: 10px; padding: 14px; height: 190px; display: flex; flex-direction: column; gap: 12px; }
+.slots { display: flex; gap: 8px; flex: 1; }
+.slot { border-radius: 6px; display: grid; place-items: center; text-align: center; font-size: 15px; padding: 0 8px; }
+.slot.sys, .slot.q { background: var(--surface); border: 1px solid var(--border); width: 104px; }
+.slot.empty { border: 2px dashed var(--primary); width: 130px; }
+.slot.free { flex: 1; border: 1px dashed var(--border); color: var(--text-muted); font-size: 13px; }
+.mover { position: absolute; left: 0; top: 0; border-radius: 6px; background: var(--primary); color: #FFFFFF; font: 600 14px var(--font-body); display: grid; place-items: center; opacity: 0; pointer-events: none; overflow: hidden; }
+.slide.active .mover { animation: chunkfly 5s ease-in-out infinite; }
+@keyframes chunkfly {
+  0% { left: var(--x0); top: var(--y0); width: var(--w0); height: var(--h0); opacity: 0; }
+  15%, 25% { left: var(--x0); top: var(--y0); width: var(--w0); height: var(--h0); opacity: 1; }
+  60%, 90% { left: var(--x1); top: var(--y1); width: var(--w1); height: var(--h1); opacity: 1; }
+  100% { left: var(--x1); top: var(--y1); width: var(--w1); height: var(--h1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .slide.active .mover { animation: none; opacity: 1; left: var(--x1); top: var(--y1); width: var(--w1); height: var(--h1); } }
+.tight li { font-size: 19px; margin-bottom: 6px; }
+.split-wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: start; }
+.splitdoc { background: #FFFFFF; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 0 4px; transition: border-color .6s ease 1.6s, padding .8s ease 1.6s; }
+.doc-title { display: block; font: 12px var(--font-code); color: var(--text-muted); padding: 0 18px 4px; }
+.ck { position: relative; margin: 0; padding: 7px 18px; font-size: 15px; line-height: 1.45; border: 2px solid transparent; border-radius: 8px; transition: margin .8s ease 1.6s, border-color .6s ease 2.2s, background .6s ease 2.2s, padding .8s ease 1.6s; }
+.ck + .ck::before { content: ""; position: absolute; left: 12px; right: 12px; top: -1px; border-top: 2px dashed var(--primary); opacity: 0; transition: opacity .4s ease .5s; }
+.ck .tag { display: block; height: 0; overflow: hidden; opacity: 0; font: 600 12px var(--font-code); letter-spacing: .04em; transition: opacity .5s ease 2.4s, height .5s ease 2.4s, margin .5s ease 2.4s; }
+.c1 { --c: #C4532B; } .c2 { --c: #8B3A4A; } .c3 { --c: #B87A16; } .c4 { --c: #7A665A; }
+.slide.active .ck + .ck::before { opacity: 1; transition: opacity .4s ease .5s; }
+.slide.active .splitdoc { border-color: transparent; padding: 0; }
+.slide.active .ck { margin-bottom: 9px; border-color: var(--c); background: var(--surface); padding: 7px 14px; }
+.slide.active .ck + .ck::before { opacity: 0; transition: opacity .3s ease 1.6s; }
+.slide.active .ck .tag { opacity: 1; height: 18px; margin-bottom: 4px; color: var(--c); }
+.search-flow { display: grid; grid-template-columns: 250px auto auto auto 1fr auto auto; justify-content: start; }
+.bubble { background: var(--surface); border: 1.5px solid var(--border); border-radius: 14px 14px 14px 4px; padding: 12px 16px; font-size: 18px; }
+.bubble small { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
+.qvec small, .dbnode small { display: block; font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+.qvec .vec { height: 28px; }
+.dbnode { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.results { display: grid; gap: 10px; }
+.res-row { display: grid; grid-template-columns: 40px 170px 1fr 190px; align-items: center; gap: 16px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; background: #FFFFFF; font-size: 17px; }
+.res-row.top { border: 2px solid var(--primary); background: #FBEDE6; }
+.rank { font: 600 20px var(--font-title); color: var(--text-muted); }
+.res-row.top .rank { color: var(--primary); }
+.rtag { font: 600 13px var(--font-code); color: var(--c); }
+.score { display: flex; align-items: center; gap: 10px; font: 600 16px var(--font-code); }
+.score i { display: block; height: 8px; border-radius: 4px; background: var(--primary); flex: 0 0 auto; max-width: 110px; }
+.res-row:not(.top) .score i { background: #C9B7A6; }
+/* aparición escalonada de los pasos del ejemplo */
+.st { opacity: 0; transform: translateY(8px); transition: opacity .5s ease, transform .5s ease; }
+.slide.active .st { opacity: 1; transform: none; }
+.slide.active .st2 { transition-delay: .5s; } .slide.active .st3 { transition-delay: 1s; } .slide.active .st4 { transition-delay: 1.5s; }
+.slide.active .st5 { transition-delay: 2.1s; } .slide.active .st6 { transition-delay: 2.4s; } .slide.active .st7 { transition-delay: 2.7s; }
+.pipe { display: flex; flex-direction: column; }
+.pipe.idx { --acc: #B87A16; --acc-text: #8A5A12; --acc-bg: #FDF4E6; }
+.pipe.qry { --acc: #8B3A4A; --acc-text: #8B3A4A; --acc-bg: #F7ECEE; }
+.pstep.llm { --acc: #C4532B; --acc-text: #A3421F; --acc-bg: #FBEDE6; }
+.pipe-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; color: var(--acc-text); }
+.pplay { font: 600 15px var(--font-body); background: #FFFFFF; border: 1.5px solid var(--acc); color: var(--acc-text); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+.psteps { display: flex; align-items: center; }
+.pstep { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 6px 12px; background: #FFFFFF; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; font: inherit; color: var(--text); transition: border-color .3s, background .3s, transform .3s; }
+.pstep .pn { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 600 14px var(--font-code); background: var(--surface); border: 1.5px solid var(--border); color: var(--text-muted); transition: all .3s; }
+.pstep b { font-size: 16px; font-weight: 600; }
+.pstep small { font-size: 12px; color: var(--text-muted); }
+.pstep.done { border-color: var(--acc); }
+.pstep.done .pn { background: var(--acc-bg); border-color: var(--acc); color: var(--acc-text); }
+.pstep.cur { border-color: var(--acc); background: var(--acc-bg); transform: translateY(-4px); }
+.pstep.cur .pn { background: var(--acc-text); border-color: var(--acc-text); color: #FFFFFF; }
+.pconn { flex: 0 0 22px; height: 3px; background: var(--border); position: relative; transition: background .3s; }
+.pconn::after { content: ""; position: absolute; right: -2px; top: -4px; border: 5.5px solid transparent; border-left: 7px solid var(--border); border-right: 0; transition: border-color .3s; }
+.pconn.done { background: var(--acc); }
+.pconn.done::after { border-left-color: var(--acc); }
+.pdetail { margin-top: 24px; border: 1.5px solid var(--border); border-top: 4px solid var(--acc); border-radius: 0 0 12px 12px; background: var(--surface); padding: 22px 26px; min-height: 200px; }
+.pinfo { display: none; grid-template-columns: 1fr 1.15fr; gap: 28px; align-items: start; }
+.pinfo.on { display: grid; animation: pfade .35s ease; }
+.pinfo h3 { color: var(--acc-text); }
+.pinfo p { font-size: 20px; margin: 0; }
+.pinfo pre { font-size: 15px; background: #FFFFFF; border: 1px solid var(--border); }
+@keyframes pfade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.archwrap { display: flex; flex-direction: column; gap: 14px; }
+.arch-rag { width: 100%; height: auto; display: block; }
+.arch-rag .ab { fill: #FFFFFF; stroke: var(--border); stroke-width: 2; }
+.arch-rag .ab.ext { stroke: var(--text-muted); stroke-dasharray: 6 4; }
+.arch-rag .ab.agent { stroke: var(--tertiary); stroke-width: 2.5; fill: #F7ECEE; }
+.arch-rag .ab.llm { stroke: var(--primary); stroke-width: 2.5; fill: #FBEDE6; }
+.arch-rag .at { font: 600 17px var(--font-body); fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+.arch-rag .as { font: 13px var(--font-body); fill: var(--text-muted); text-anchor: middle; dominant-baseline: central; }
+.arch-rag .al { font: 13px var(--font-code); fill: var(--text-muted); }
+.arch-rag .lane-t { font: 600 13px var(--font-body); letter-spacing: .06em; }
+.arch-rag .cont { stroke-width: 1.5; }
+.arch-rag .cont-i { fill: #FFFBF4; stroke: #E3C08A; }
+.arch-rag .cont-q { fill: #FDF8F9; stroke: #D9B8BF; }
+.arch-rag .sa { text-anchor: start; }
+.arch-rag .ico { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.arch-rag .bubble-u { fill: #FFFFFF; stroke: #8B3A4A; stroke-width: 1.5; }
+.arch-rag .ask { font: 500 16px var(--font-body); fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+.arch-rag .bd { stroke: #FFFFFF; stroke-width: 2; }
+.arch-rag .bi .bd { fill: #8A5A12; } .arch-rag .bq .bd { fill: #8B3A4A; } .arch-rag .bl .bd { fill: #A3421F; }
+.arch-rag .bt { font: 600 13px var(--font-code); fill: #FFFFFF; text-anchor: middle; dominant-baseline: central; }
+.arch-rag .i, .arch-rag .q { transition: opacity .35s ease; }
+.archwrap[data-flow="i"] .arch-rag .q, .archwrap[data-flow="q"] .arch-rag .i { opacity: .12; }
+.arch-ctrl { display: flex; align-items: center; gap: 20px; }
+.seg { display: flex; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; flex: 0 0 auto; }
+.seg button { font: 600 15px var(--font-body); background: #FFFFFF; color: var(--text); border: 0; padding: 8px 14px; cursor: pointer; }
+.seg button + button { border-left: 1.5px solid var(--border); }
+.seg button.on { background: var(--text); color: #FFFFFF; }
+.arch-cap { display: none; margin: 0; font-size: 17px; line-height: 1.45; }
+.archwrap[data-flow="all"] .arch-cap[data-f="all"], .archwrap[data-flow="i"] .arch-cap[data-f="i"], .archwrap[data-flow="q"] .arch-cap[data-f="q"] { display: block; }
+.nxm, .mcparch { width: 100%; height: auto; display: block; }
+.nxm .ab, .mcparch .ab { fill: #FFFFFF; stroke: var(--border); stroke-width: 2; }
+.nxm .at, .mcparch .at { font: 600 17px var(--font-body); fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+.nxm .at.sm, .mcparch .at.sm { font-size: 15px; }
+.mcparch .as { font: 13px var(--font-body); fill: var(--text-muted); text-anchor: middle; dominant-baseline: central; }
+.nxm .lane-t, .mcparch .lane-t { font: 600 13px var(--font-body); letter-spacing: .06em; }
+.nxm .ico-r { fill: none; stroke: #8B3A4A; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.nxm .mess { stroke: #B88A94; stroke-width: 1.6; }
+.nxm .clean { stroke: #C4532B; stroke-width: 2.5; }
+.nxm .mcpv { font: 600 18px var(--font-title); fill: #FFFFFF; text-anchor: middle; dominant-baseline: central; letter-spacing: .1em; }
+.mcparch .host { fill: #FDF8F9; stroke: #D9B8BF; stroke-width: 1.5; }
+.mcparch .ab.llm { fill: #FBEDE6; stroke: var(--primary); stroke-width: 2.5; }
+.mcparch .ab.cl { stroke: var(--tertiary); }
+.mcparch .ab.sv { stroke: var(--primary); stroke-width: 2.5; }
+.mcparch .rpc { stroke: var(--primary); stroke-width: 2.5; }
+.mcparch .dsh { stroke: var(--text-muted); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.mcparch .dsh2 { stroke: #C99AA3; stroke-width: 1.6; }
+.mcparch .al { font: 13px var(--font-code); fill: #A3421F; }
+.trace { display: flex; flex-direction: column; gap: 10px; }
+.tr { display: grid; grid-template-columns: 130px 1fr; gap: 14px; align-items: center; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; background: #FFFFFF; font-size: 18px; }
+.tr.call { border: 2px solid var(--primary); background: #FBEDE6; }
+.tk { font: 600 12px var(--font-code); letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
+.tr .bubble { padding: 6px 12px; font-size: 17px; justify-self: start; }
+.srv p { font-size: 17px; margin: 0 0 14px; line-height: 1.4; }
+.pipe.mcp { --acc: #C4532B; --acc-text: #A3421F; --acc-bg: #FBEDE6; }
+.pipe.mcp .pstep.llm { --acc: #8B3A4A; --acc-text: #8B3A4A; --acc-bg: #F7ECEE; }
+.pre-json, pre.json { font-size: 13.5px; line-height: 1.45; white-space: pre; overflow: hidden; }
+.pipe.mcp .pinfo { grid-template-columns: 0.8fr 1.2fr; }
+.codeblk { font-size: 15.5px; line-height: 1.5; white-space: pre; }
+.codeblk.sm { font-size: 14px; background: #FFFFFF; border: 1px solid var(--border); }
+.kicker { font: 600 18px var(--font-body); letter-spacing: .04em; color: var(--primary); margin: 0 0 18px; }
+.hub { position: absolute; right: 70px; top: 100px; width: 520px; height: 520px; }
+.hub .spoke { stroke: #C4532B; stroke-width: 3; stroke-dasharray: 8 8; stroke-linecap: round; }
+.slide.active .hub .spoke { animation: spokeflow 1.2s linear infinite; }
+@keyframes spokeflow { to { stroke-dashoffset: -16; } }
+@media (prefers-reduced-motion: reduce) { .slide.active .hub .spoke { animation: none; } }
+.hub .hubn { fill: #FFFFFF; stroke: var(--border); stroke-width: 2; }
+.hub .hubt { font: 600 24px var(--font-title); fill: #A3421F; text-anchor: middle; dominant-baseline: central; letter-spacing: .06em; }
+.multi { width: 100%; height: auto; display: block; }
+.multi .ab { fill: #FFFFFF; stroke: var(--border); stroke-width: 2; }
+.multi .ab.srvbox { fill: #FBEDE6; stroke: var(--primary); stroke-width: 3; }
+.multi .at { font: 600 16px var(--font-body); fill: var(--text); dominant-baseline: central; }
+.multi .as { font: 13px var(--font-body); fill: var(--text-muted); dominant-baseline: central; }
+.multi .sa { text-anchor: start; }
+.multi .mono { font: 500 15px var(--font-code); fill: var(--text); font-variant-ligatures: none; }
+.multi .lane-t { font: 600 13px var(--font-body); letter-spacing: .06em; }
+.multi .ua { stroke: #8B3A4A; stroke-width: 2; }
+.multi .flow { fill: none; stroke: #C4532B; stroke-width: 2.5; stroke-dasharray: 8 7; stroke-linecap: round; }
+.slide.active .multi .flow { animation: spokeflow 1.2s linear infinite reverse; }
+@media (prefers-reduced-motion: reduce) { .slide.active .multi .flow { animation: none; } }
+.multi .ms { stroke: #C4532B; stroke-width: 2.5; }
+.multi .ico-u, .multi .ico-r, .multi .ico-db { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.multi .ico-u { stroke: #2E221C; } .multi .ico-r { stroke: #8B3A4A; } .multi .ico-db { stroke: #7A665A; }
+.corner { position: absolute; font: 15px var(--font-code); color: var(--text-muted); }
+.corner.mark { width: 36px; height: 36px; border: 0 solid var(--primary); }
+.dots { position: absolute; width: 132px; height: 60px; background: radial-gradient(circle, #D6BFA6 2.5px, transparent 3px) 0 0 / 22px 20px; }
+.agenda { columns: 2; column-gap: 64px; list-style: none; padding: 0; counter-reset: a; }
+.agenda li { counter-increment: a; break-inside: avoid; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.agenda li::before { content: counter(a, decimal-leading-zero); color: var(--primary); font-weight: 600; margin-right: 16px; }
+#ui { position: fixed; right: 16px; bottom: 12px; display: flex; gap: 8px; align-items: center; font: 14px var(--font-body); color: var(--text); }
+#ui button { font: inherit; background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; color: var(--text); }
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  html, body { overflow: visible; background: #fff; }
+  #deck { position: static; transform: none !important; }
+  .slide, .slide[hidden] { position: relative; display: flex; height: 720px; page-break-after: always; }
+  #ui { display: none; }
+}
+</style>
+</head>
+<body>
+<main id="deck">
+
+<!-- Portada -->
+<section class="slide cover">
+  <canvas id="vecs" width="1040" height="1040" aria-hidden="true" style="position:absolute;right:56px;top:100px;width:520px;height:520px"></canvas>
+  <h1>GenAI Aplicado</h1>
+  <p class="sub">Ciencia de Datos · FIUBA</p>
+  <div class="corner mark" style="top:40px;left:40px;border-top-width:3px;border-left-width:3px"></div>
+  <span class="corner" style="top:52px;left:96px">v ∈ ℝ³⁸⁴</span>
+  <span class="corner" style="top:52px;right:64px">[0.12, −0.48, 0.07, …]</span>
+  <div class="dots" style="bottom:44px;left:96px" aria-hidden="true"></div>
+  <span class="corner" style="bottom:52px;right:96px">cos(q, d) = q·d / ‖q‖‖d‖</span>
+  <div class="corner mark" style="bottom:40px;right:40px;border-bottom-width:3px;border-right-width:3px"></div>
+</section>
+
+<!-- Agenda -->
+<section class="slide" data-sec="Agenda">
+  <h2>Hoja de ruta</h2>
+  <div class="body">
+    <ol class="agenda">
+      <li>Qué es la búsqueda semántica</li>
+      <li>Cómo se construyen los vectores</li>
+      <li>Sentence Transformers</li>
+      <li>Búsqueda por proximidad</li>
+      <li>Vector databases</li>
+      <li>Chunking</li>
+      <li>Querying</li>
+      <li>RAG como concepto</li>
+      <li>Pipeline de RAG completo</li>
+      <li>MCP: Model Context Protocol</li>
+    </ol>
+  </div>
+  <p class="note">Clases anteriores: <b>Transformers</b> y <b>LLMs</b>. Hoy: cómo darle a un LLM <b>nuestros</b> datos.</p>
+</section>
+
+<!-- 01 -->
+<section class="slide" data-sec="01 · Búsqueda semántica">
+  <h2>Buscar por significado, no por palabras</h2>
+  <div class="body cols">
+    <div class="card">
+      <h3 class="t-tertiary">Búsqueda léxica (BM25)</h3>
+      <p>Coincidencia de tokens.</p>
+      <p>"auto" no encuentra "coche".</p>
+      <p>"cómo cancelo mi plan" no encuentra "baja de suscripción".</p>
+    </div>
+    <div class="card key">
+      <h3 class="t-primary">Búsqueda semántica</h3>
+      <p>Coincidencia de significado.</p>
+      <p>"auto" ≈ "coche" ≈ "vehículo".</p>
+      <p>Funciona con paráfrasis, sinónimos e incluso otros idiomas.</p>
+    </div>
+  </div>
+  <p class="note">Idea central: si el significado es un <b>punto en un espacio</b>, buscar es encontrar los <b>puntos más cercanos</b>.</p>
+</section>
+
+<section class="slide" data-sec="01 · Búsqueda semántica">
+  <h2>¿Dónde se usa?</h2>
+  <div class="body cols" style="--n:3">
+    <div class="card"><h3>Buscadores internos</h3><p>Docs, wikis, tickets, código.</p></div>
+    <div class="card"><h3>Soporte</h3><p>Encontrar la respuesta o el caso similar.</p></div>
+    <div class="card"><h3>Recomendación</h3><p>"Productos parecidos a este".</p></div>
+    <div class="card"><h3>Deduplicación</h3><p>Detectar textos casi iguales.</p></div>
+    <div class="card"><h3>Clustering</h3><p>Agrupar por tema sin etiquetas.</p></div>
+    <div class="card key"><h3 class="t-primary">RAG</h3><p>Darle contexto a un LLM. Lo vemos al final.</p></div>
+  </div>
+</section>
+
+<!-- 02 -->
+<section class="slide" data-sec="02 · Embeddings">
+  <h2>De texto a vectores</h2>
+  <div class="body cols" style="grid-template-columns: 1fr 1.1fr">
+    <div>
+      <ul>
+        <li>Un <b>embedding</b> convierte texto en un vector de dimensión fija: 384, 768, 1024…</li>
+        <li>En la clase 1 vimos embeddings <b>por token</b>. Ahora queremos <b>uno por frase o párrafo</b>.</li>
+        <li>Textos con significado parecido quedan <b>cerca</b>.</li>
+      </ul>
+      <pre style="margin-top:18px">model.encode(<span class="s">"cómo cancelo mi plan"</span>)
+<span class="k">→</span> [0.12, -0.48, 0.07, …]  <span class="c"># 384 dims</span></pre>
+    </div>
+    <svg viewBox="0 0 520 380" role="img" aria-label="Espacio de embeddings proyectado a 2D con tres grupos: vehículos, animales y comida" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px">
+      <g font-family="Inter, sans-serif" font-size="16" fill="#2E221C">
+        <circle cx="110" cy="90" r="7" fill="#8B3A4A"/><text x="122" y="95">auto</text>
+        <circle cx="150" cy="130" r="7" fill="#8B3A4A"/><text x="162" y="135">coche</text>
+        <circle cx="90" cy="150" r="7" fill="#8B3A4A"/><text x="40" y="178">camión</text>
+        <circle cx="370" cy="110" r="7" fill="#C4532B"/><text x="382" y="115">perro</text>
+        <circle cx="410" cy="160" r="7" fill="#C4532B"/><text x="422" y="165">lobo</text>
+        <circle cx="340" cy="170" r="7" fill="#C4532B"/><text x="290" y="198">gato</text>
+        <circle cx="230" cy="300" r="7" fill="#E3A13A"/><text x="242" y="305">pizza</text>
+        <circle cx="290" cy="330" r="7" fill="#E3A13A"/><text x="302" y="335">pasta</text>
+        <circle cx="130" cy="210" r="9" fill="none" stroke="#2E221C" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="146" y="216" font-weight="600">"vehículo" (query)</text>
+        <line x1="132" y1="200" x2="148" y2="138" stroke="#7A665A" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <text x="20" y="360" font-size="13" fill="#7A665A">Proyección 2D (PCA / UMAP) de vectores de alta dimensión</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section class="slide" data-sec="02 · Embeddings">
+  <h2>Propiedades que importan</h2>
+  <div class="body">
+    <div class="s2v">
+      <span class="sent">"El gato duerme en el sillón"</span><span class="arrow">→</span><span class="node vin">encoder</span><span class="arrow">→</span><div class="vec" data-v="a"></div><span class="sim t-muted">referencia</span>
+      <span class="sent">"Un felino descansa en el sofá"</span><span class="arrow">→</span><span class="node vin">encoder</span><span class="arrow">→</span><div class="vec" data-v="b"></div><span class="sim t-primary">cos = 0.91</span>
+      <span class="sent">"La pizza llegó fría"</span><span class="arrow">→</span><span class="node vin">encoder</span><span class="arrow">→</span><div class="vec" data-v="c"></div><span class="sim t-muted">cos = 0.12</span>
+      <span></span><span></span><span></span><span></span><span class="vec-legend">384 dimensiones (se muestran 32) · <span class="t-primary">■</span> positivo <span class="t-tertiary">■</span> negativo</span><span></span>
+    </div>
+    <div class="props">
+      <div><h3>Dimensión</h3><p>Más dimensiones: más capacidad, pero más memoria y cómputo.</p></div>
+      <div><h3>Normalización</h3><p>Con norma 1, el producto punto es la similitud coseno.</p></div>
+      <div class="key"><h3 class="t-primary">Un modelo, un espacio</h3><p>Solo se comparan vectores del <b>mismo modelo</b>.</p></div>
+    </div>
+  </div>
+  <p class="note">El clásico <b>rey − hombre + mujer ≈ reina</b>: las direcciones del espacio codifican relaciones.</p>
+</section>
+
+<!-- 03 -->
+<section class="slide" id="s-enc" data-sec="03 · Sentence Transformers">
+  <h2>Modelos Encoder-Only</h2>
+  <div class="body arch">
+    <!-- Diagrama adaptado de la clase de intro (Vaswani et al. 2017, Fig. 1). Al entrar, el decoder se apaga y aparece el pooling. -->
+    <svg class="tf" viewBox="0 -20 600 590" role="img" aria-label="Diagrama del Transformer: al entrar a la slide el decoder se apaga y queda solo el encoder, cuya salida pasa por pooling para obtener un vector de la frase.">
+      <defs>
+        <marker id="tf-h" orient="auto" markerWidth="8" markerHeight="8" refX="7" refY="4" markerUnits="userSpaceOnUse"><path d="M0 0 L8 4 L0 8 Z" fill="#7A665A"/></marker>
+        <marker id="tf-hr" orient="auto" markerWidth="8" markerHeight="8" refX="7" refY="4" markerUnits="userSpaceOnUse"><path d="M0 0 L8 4 L0 8 Z" fill="#B8A595"/></marker>
+        <marker id="tf-hkv" orient="auto" markerWidth="8" markerHeight="8" refX="7" refY="4" markerUnits="userSpaceOnUse"><path d="M0 0 L8 4 L0 8 Z" fill="#C4532B"/></marker>
+      </defs>
+      <g transform="translate(0,24)">
+        <!-- ENCODER -->
+        <g class="enc">
+          <rect class="lay" x="18" y="202" width="248" height="222" rx="12"/>
+          <rect class="lay" x="22" y="206" width="248" height="222" rx="12"/>
+          <rect class="lay" x="26" y="210" width="248" height="222" rx="12"/>
+          <text class="lbl" x="36" y="226">ENCODER</text>
+          <text class="lbl" x="242" y="226">×6</text>
+          <polyline class="res" points="150,422 40,422 40,338 49,338" marker-end="url(#tf-hr)"/>
+          <polyline class="res" points="150,314 40,314 40,244 49,244" marker-end="url(#tf-hr)"/>
+          <g class="ar" marker-end="url(#tf-h)">
+            <line x1="150" y1="521" x2="150" y2="503"/><line x1="150" y1="476" x2="150" y2="457"/>
+            <line x1="110" y1="414" x2="110" y2="401"/><line x1="150" y1="414" x2="150" y2="401"/><line x1="190" y1="414" x2="190" y2="401"/>
+            <line x1="150" y1="370" x2="150" y2="351"/><line x1="150" y1="326" x2="150" y2="303"/><line x1="150" y1="272" x2="150" y2="257"/>
+          </g>
+          <path class="ar" d="M150 436 V414 M110 414 H190"/>
+          <rect class="b-nrm" x="50" y="232" width="200" height="24" rx="6"/><text class="t-nrm" x="150" y="244">Add &amp; Norm</text>
+          <rect class="b-ff" x="50" y="272" width="200" height="30" rx="6"/><text x="150" y="287">Feed Forward</text>
+          <rect class="b-nrm" x="50" y="326" width="200" height="24" rx="6"/><text class="t-nrm" x="150" y="338">Add &amp; Norm</text>
+          <rect class="b-att" x="50" y="370" width="200" height="30" rx="6"/><text x="150" y="385">Multi-Head Attention</text>
+          <circle cx="150" cy="446" r="10" fill="#FFFFFF" stroke="#7A665A" stroke-width="1.6"/><path d="M144 446 H156 M150 440 V452" stroke="#7A665A" stroke-width="1.6"/>
+          <text class="ann" x="136" y="446" style="text-anchor:end">posición +</text>
+          <rect class="b-emb" x="50" y="476" width="200" height="26" rx="6"/><text x="150" y="489">Embedding</text>
+          <text class="io" x="150" y="535">El gato duerme</text>
+        </g>
+        <!-- ENCODER-ONLY: salida del encoder → pooling → vector -->
+        <g class="eo">
+          <line class="ar" x1="150" y1="230" x2="150" y2="150" marker-end="url(#tf-h)"/>
+          <text class="ann" x="160" y="190" style="text-anchor:start">un vector por token</text>
+          <rect class="b-pool" x="60" y="118" width="180" height="30" rx="6"/><text x="150" y="133">Pooling</text>
+          <line class="ar" x1="150" y1="118" x2="150" y2="94" marker-end="url(#tf-h)"/>
+          <rect class="b-vec" x="40" y="62" width="220" height="30" rx="6"/><text x="150" y="77" style="fill:#FFFFFF">Vector de la frase</text>
+        </g>
+        <!-- DECODER (se apaga) -->
+        <g class="dec">
+          <rect class="lay" x="314" y="110" width="268" height="314" rx="12"/>
+          <rect class="lay" x="310" y="114" width="268" height="314" rx="12"/>
+          <rect class="lay" x="306" y="118" width="268" height="314" rx="12"/>
+          <text class="lbl" x="316" y="134">DECODER</text>
+          <text class="lbl" x="542" y="134">×6</text>
+          <polyline class="res" points="430,422 550,422 550,338 531,338" marker-end="url(#tf-hr)"/>
+          <polyline class="res" points="430,224 550,224 550,158 531,158" marker-end="url(#tf-hr)"/>
+          <polyline class="res" points="470,314 550,314 550,244 531,244" marker-end="url(#tf-hr)"/>
+          <g class="ar" marker-end="url(#tf-h)">
+            <line x1="430" y1="521" x2="430" y2="503"/><line x1="430" y1="476" x2="430" y2="457"/>
+            <line x1="390" y1="414" x2="390" y2="401"/><line x1="430" y1="414" x2="430" y2="401"/><line x1="470" y1="414" x2="470" y2="401"/>
+            <line x1="430" y1="370" x2="430" y2="351"/>
+            <line x1="430" y1="186" x2="430" y2="171"/><line x1="430" y1="146" x2="430" y2="75"/>
+            <line x1="430" y1="50" x2="430" y2="41"/><line x1="430" y1="16" x2="430" y2="6"/>
+            <line x1="470" y1="326" x2="470" y2="303"/><line x1="430" y1="272" x2="430" y2="257"/><line x1="430" y1="232" x2="430" y2="217"/>
+          </g>
+          <path class="ar" d="M430 436 V414 M390 414 H470"/>
+          <text class="ann" x="484" y="316">Q</text>
+          <rect class="b-nrm" x="330" y="232" width="200" height="24" rx="6"/><text class="t-nrm" x="430" y="244">Add &amp; Norm</text>
+          <rect class="b-att" x="330" y="272" width="200" height="30" rx="6"/><text x="430" y="287">Multi-Head Attention</text>
+          <rect class="b-out" x="330" y="16" width="200" height="24" rx="6"/><text x="430" y="28">Softmax</text>
+          <rect class="b-out" x="330" y="50" width="200" height="24" rx="6"/><text x="430" y="62">Linear</text>
+          <rect class="b-nrm" x="330" y="146" width="200" height="24" rx="6"/><text class="t-nrm" x="430" y="158">Add &amp; Norm</text>
+          <rect class="b-ff" x="330" y="186" width="200" height="30" rx="6"/><text x="430" y="201">Feed Forward</text>
+          <rect class="b-nrm" x="330" y="326" width="200" height="24" rx="6"/><text class="t-nrm" x="430" y="338">Add &amp; Norm</text>
+          <rect class="b-att" x="330" y="370" width="200" height="30" rx="6"/><text x="430" y="385">Masked Multi-Head Att.</text>
+          <circle cx="430" cy="446" r="10" fill="#FFFFFF" stroke="#7A665A" stroke-width="1.6"/><path d="M424 446 H436 M430 440 V452" stroke="#7A665A" stroke-width="1.6"/>
+          <text class="ann" x="444" y="446" style="text-anchor:start">+ posición</text>
+          <rect class="b-emb" x="330" y="476" width="200" height="26" rx="6"/><text x="430" y="489">Embedding</text>
+          <text class="io" x="430" y="535">&lt;s&gt; The cat</text>
+          <text class="ann" x="430" y="-10">Probabilidad del próximo token</text>
+        </g>
+        <!-- cross-attention: el puente encoder → decoder (desaparece del todo) -->
+        <g class="kvl">
+          <polyline class="kv" points="150,232 150,174 290,174 290,316 370,316 370,303" marker-end="url(#tf-hkv)"/>
+          <text x="210" y="162" style="fill:#C4532B">K, V</text>
+        </g>
+      </g>
+    </svg>
+    <div>
+      <ul>
+        <li>La otra mitad del Transformer: <b>sin decoder, sin generación</b>.</li>
+        <li>Cada token ve a todos los demás: entiende contexto <b>en ambas direcciones</b>.</li>
+        <li><b>Pooling</b>: de N vectores (uno por token) a uno solo. Lo más común es el promedio (mean pooling).</li>
+        <li>BERT "crudo" da malos embeddings de frase: hace falta <b>entrenarlo para similitud</b>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="03 · Sentence Transformers">
+  <h2>Dentro de un Sentence Transformer</h2>
+  <div class="body">
+    <div class="flow" style="justify-content:center;margin:24px 0 14px">
+      <div class="toks">
+        <span class="tok sp">[CLS]</span><span class="tok">el</span><span class="tok">gato</span><span class="tok">duerme</span><span class="tok sp">[SEP]</span>
+        <small>tokenizer · N = 5</small>
+      </div>
+      <span class="arrow">→</span>
+      <div class="node vin" style="padding:16px 18px">Encoder<small>atención bidireccional</small></div>
+      <span class="arrow">→</span>
+      <div class="node"><div class="mat"><i></i><i></i><i></i><i></i><i></i></div><small>N × 384</small></div>
+      <span class="arrow">→</span>
+      <div class="node amb">Pooling<small>mean o CLS</small></div>
+      <span class="arrow">→</span>
+      <div class="node"><div class="mat"><i class="one"></i></div><small>1 × 384</small></div>
+      <span class="arrow">→</span>
+      <div class="node ter">Normalizar<small>‖v‖ = 1</small></div>
+    </div>
+    <p class="t-muted" style="text-align:center;font-size:17px;margin:0 0 48px">Todo esto pasa dentro de <code>model.encode("El gato duerme")</code></p>
+    <div class="props">
+      <div class="key"><h3 class="t-primary">[CLS] · el token resumen</h3><p>Va primero y no es ninguna palabra. Mira a todos los tokens: su vector final resume la frase. Base del <b>CLS pooling</b>.</p></div>
+      <div><h3>[SEP] · el separador</h3><p>Marca el fin de un segmento. Permite meter dos textos juntos: <code>[CLS] query [SEP] doc [SEP]</code>, el formato del <b>cross-encoder</b>.</p></div>
+      <div><h3>[PAD] · el relleno</h3><p>Iguala longitudes en un batch. La <b>attention mask</b> lo ignora, también al promediar.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="03 · Sentence Transformers">
+  <h2>Modelos de referencia</h2>
+  <div class="body">
+    <table>
+      <tr><th>Modelo</th><th>Dims</th><th>Notas</th></tr>
+      <tr><td><code>all-MiniLM-L6-v2</code></td><td>384</td><td>Liviano y rápido, ideal para empezar (inglés)</td></tr>
+      <tr><td><code>paraphrase-multilingual-*</code></td><td>384–768</td><td>Multilingüe, sirve para español</td></tr>
+      <tr><td><code>bge-m3</code> / <code>multilingual-e5</code></td><td>1024</td><td>Open source, multilingües y muy competitivos</td></tr>
+      <tr><td>Embeddings por API</td><td>variable</td><td>Sin infraestructura propia, pago por uso</td></tr>
+    </table>
+    <pre style="margin-top:22px"><span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+model = SentenceTransformer(<span class="s">"all-MiniLM-L6-v2"</span>)
+emb = model.encode([<span class="s">"auto"</span>, <span class="s">"coche"</span>, <span class="s">"pizza"</span>], normalize_embeddings=<span class="k">True</span>)</pre>
+  </div>
+  <p class="note">Para comparar modelos: leaderboard <b>MTEB</b> (Massive Text Embedding Benchmark).</p>
+</section>
+
+<!-- 04 -->
+<section class="slide" data-sec="04 · Búsqueda por proximidad">
+  <h2>¿Qué tan cerca están dos vectores?</h2>
+  <div class="body cols" style="--n:3">
+    <div class="card key"><h3 class="t-primary">Similitud coseno</h3><p><code>cos(a,b) = a·b / (|a||b|)</code></p><p>Mide el ángulo. La más usada.</p></div>
+    <div class="card"><h3>Producto punto</h3><p><code>a·b</code></p><p>Con vectores normalizados es igual al coseno, y más barato.</p></div>
+    <div class="card"><h3>Euclidiana</h3><p><code>|a − b|</code></p><p>Distancia "en línea recta". Con normalización, ordena igual.</p></div>
+  </div>
+  <div class="card" style="margin-top:8px">
+    <h3 class="t-tertiary">kNN exacto</h3>
+    <p>Comparar la query contra <b>todos</b> los vectores y quedarse con los k mejores: <b>O(N)</b>.</p>
+    <p>1M de documentos × 768 dims ≈ 768M multiplicaciones <b>por consulta</b>. No escala.</p>
+  </div>
+</section>
+
+<!-- 05 -->
+<section class="slide" data-sec="05 · Vector databases">
+  <h2>Bases de datos vectoriales</h2>
+  <div class="body orbit" id="orbit">
+    <svg class="orbit-center" viewBox="0 0 220 230" width="230" height="240" role="img" aria-label="Ícono de una base de datos con vectores">
+      <defs>
+        <marker id="vdb-1" orient="auto" markerWidth="10" markerHeight="10" refX="8" refY="5" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#C4532B"/></marker>
+        <marker id="vdb-2" orient="auto" markerWidth="10" markerHeight="10" refX="8" refY="5" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#B87A16"/></marker>
+        <marker id="vdb-3" orient="auto" markerWidth="10" markerHeight="10" refX="8" refY="5" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#8B3A4A"/></marker>
+      </defs>
+      <path d="M15 32 V182 A72 20 0 0 0 159 182 V32 Z" fill="#2E221C"/>
+      <ellipse cx="87" cy="32" rx="72" ry="20" fill="#2E221C" stroke="#FFFFFF" stroke-width="5"/>
+      <path d="M15 82 A72 20 0 0 0 159 82 M15 132 A72 20 0 0 0 159 132" fill="none" stroke="#FFFFFF" stroke-width="6"/>
+      <circle cx="152" cy="162" r="60" fill="#FFFFFF"/>
+      <circle cx="152" cy="162" r="52" fill="#FBEDE6" stroke="#C4532B" stroke-width="3"/>
+      <g stroke-width="4" stroke-linecap="round" fill="none">
+        <line x1="124" y1="190" x2="182" y2="176" stroke="#C4532B" marker-end="url(#vdb-1)"/>
+        <line x1="124" y1="190" x2="166" y2="134" stroke="#B87A16" marker-end="url(#vdb-2)"/>
+        <line x1="124" y1="190" x2="128" y2="126" stroke="#8B3A4A" marker-end="url(#vdb-3)"/>
+      </g>
+      <circle cx="124" cy="190" r="5" fill="#2E221C"/>
+    </svg>
+      <div class="orb"><span class="logo" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@16.38.1/icons/qdrant.svg);background:#DC244C"></span><b>Qdrant</b></div>
+      <div class="orb"><span class="logo" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@16.38.1/icons/milvus.svg);background:#00A1EA"></span><b>Milvus</b></div>
+      <div class="orb"><span class="mono" style="border-color:#1B17F5;border-width:4px">P</span><b>Pinecone</b></div>
+      <div class="orb"><span class="mono" style="border-color:#00C29A;border-width:4px">W</span><b>Weaviate</b></div>
+      <div class="orb"><span class="mono" style="border-color:#FF6446;border-width:4px">C</span><b>Chroma</b></div>
+      <div class="orb"><span class="logo" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@16.38.1/icons/meta.svg);background:#0467DF"></span><b>FAISS</b></div>
+      <div class="orb"><span class="logo" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@16.38.1/icons/postgresql.svg);background:#4169E1"></span><b>pgvector</b></div>
+      <div class="orb"><span class="logo" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@16.38.1/icons/elasticsearch.svg);background:#005571"></span><b>Elasticsearch</b></div>
+      <div class="orb"><span class="logo" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@16.38.1/icons/redis.svg);background:#FF4438"></span><b>Redis</b></div>
+      <div class="orb"><span class="logo" style="--src:url(https://cdn.jsdelivr.net/npm/simple-icons@16.38.1/icons/mongodb.svg);background:#47A248"></span><b>MongoDB</b></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="05 · Vector databases">
+  <h2>Usos de una Vector DB</h2>
+  <div class="body cols">
+    <pre>{
+  <span class="s">"id"</span>: <span class="s">"doc-42#chunk-3"</span>,
+  <span class="s">"vector"</span>: [0.12, -0.48, …],
+  <span class="s">"text"</span>: <span class="s">"Para dar de baja tu plan…"</span>,
+  <span class="s">"metadata"</span>: {
+    <span class="s">"source"</span>: <span class="s">"faq.pdf"</span>,
+    <span class="s">"date"</span>: <span class="s">"2026-10-01"</span>,
+    <span class="s">"acl"</span>: [<span class="s">"soporte"</span>]
+  }
+}</pre>
+    <ul>
+      <li><b>Upsert</b>: insertar o actualizar vectores.</li>
+      <li><b>Top-k</b>: dada una query, devuelve los k vecinos más cercanos. Se calcula en cada búsqueda.</li>
+      <li><b>Filtros por metadata</b>: fecha, fuente, permisos.
+        <br><span class="t-muted" style="font-size:18px">Pre-filter vs post-filter: cambia qué resultados vuelven.</span></li>
+      <li>Si cambiás el modelo de embeddings, hay que <b>re-indexar todo</b>.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide" data-sec="05 · Vector databases">
+  <h2>El panorama</h2>
+  <div class="body cols" style="--n:3">
+    <div class="card"><h3 class="t-tertiary">Librerías</h3><p>FAISS</p><p class="t-muted">Índices en memoria, sin servidor.</p></div>
+    <div class="card"><h3 class="t-tertiary">DBs dedicadas</h3><p>Qdrant, Weaviate, Milvus, Pinecone, Chroma</p><p class="t-muted">Pensadas para vectores desde cero.</p></div>
+    <div class="card key"><h3 class="t-primary">Extensiones</h3><p>pgvector, Elasticsearch / OpenSearch</p><p class="t-muted">Vectores dentro de lo que ya usás.</p></div>
+  </div>
+  <p class="note">Mensaje práctico: muchas veces <b>pgvector alcanza</b>. No siempre hace falta una pieza más de infraestructura.</p>
+</section>
+
+<!-- 06 -->
+<section class="slide" data-sec="06 · Chunking">
+  <h2>Chunking: ¿Por qué dividir documentos?</h2>
+  <div class="body">
+    <div class="split-wrap">
+      <div class="splitdoc" aria-label="Un documento de ayuda se divide en cuatro chunks, uno por tema">
+        <small class="doc-title">ayuda.md · Centro de ayuda</small>
+        <p class="ck c1"><b class="tag">chunk 1 · facturación</b>Las facturas se emiten el día 1 de cada mes y llegan por email. Podés descargarlas desde Configuración → Pagos.</p>
+        <p class="ck c2"><b class="tag">chunk 2 · baja del plan</b>Para dar de baja tu plan, entrá a Configuración → Suscripción. La baja se hace efectiva al final del período facturado.</p>
+        <p class="ck c3"><b class="tag">chunk 3 · envíos</b>Los envíos dentro de CABA tardan entre 24 y 48 h. Al interior del país, entre 3 y 5 días hábiles.</p>
+        <p class="ck c4"><b class="tag">chunk 4 · contraseña</b>Si olvidaste tu contraseña, usá "Recuperar acceso". Te enviamos un enlace válido por 30 minutos.</p>
+      </div>
+      <div>
+        <ul class="tight">
+          <li>El encoder tiene <b>límite de tokens</b> (ej. 512).</li>
+          <li>Un vector para un documento entero <b>diluye</b> el significado: mezcla todos los temas.</li>
+          <li>Con chunks, cada vector representa <b>una sola idea</b>.</li>
+        </ul>
+        <div class="cols" style="margin-top:18px">
+          <div class="card"><h3 class="t-tertiary">Chunk chico</h3><p>Preciso, pero sin contexto.</p></div>
+          <div class="card"><h3 class="t-tertiary">Chunk grande</h3><p>Con contexto, pero ruidoso.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="note">No hay tamaño universal: se elige <b>evaluando con tus propios datos</b>.</p>
+</section>
+
+<section class="slide" data-sec="06 · Chunking">
+  <h2>Estrategias de Chunking</h2>
+  <div class="body cols" style="--n:3">
+    <div class="card"><h3>Tamaño fijo + overlap</h3><p>N tokens con solapamiento. Simple y sorprendentemente bueno.</p></div>
+    <div class="card"><h3>Recursivo</h3><p>Párrafos → oraciones → caracteres, hasta que entre.</p></div>
+    <div class="card"><h3>Por formato</h3><p>Headers de Markdown, secciones HTML, funciones de código, tablas.</p></div>
+    <div class="card"><h3>Semántico</h3><p>Cortar donde cambia el tema, usando embeddings.</p></div>
+    <div class="card"><h3>Parent-child</h3><p>Buscar con chunks chicos, devolver el bloque grande.</p></div>
+    <div class="card key"><h3 class="t-primary">Enriquecido</h3><p>Agregar título, sección o un resumen del contexto al chunk.</p></div>
+  </div>
+</section>
+
+<!-- 07 -->
+<section class="slide" id="s-search" data-sec="07 · Querying">
+  <h2>Ejemplo: de la pregunta a la documentación</h2>
+  <div class="body">
+    <div class="flow search-flow" style="margin:4px 0 26px">
+      <div class="bubble st st1"><small>usuario</small>"¿Cómo doy de baja mi plan?"</div>
+      <span class="arrow st st2">→</span>
+      <div class="node vin st st2">Modelo de embeddings<small>el mismo que indexó</small></div>
+      <span class="arrow st st3">→</span>
+      <div class="st st3 qvec"><div class="vec" data-v="b"></div><small>vector de la pregunta · 384 dims</small></div>
+      <span class="arrow st st4">→</span>
+      <div class="node st st4 dbnode">
+        <svg viewBox="0 0 60 70" width="44" height="52" aria-hidden="true"><path d="M4 12 V58 A26 8 0 0 0 56 58 V12 Z" fill="#2E221C"/><ellipse cx="30" cy="12" rx="26" ry="8" fill="#2E221C" stroke="#FFFFFF" stroke-width="2.5"/><path d="M4 30 A26 8 0 0 0 56 30 M4 46 A26 8 0 0 0 56 46" fill="none" stroke="#FFFFFF" stroke-width="3"/></svg>
+        Vector DB<small>top-3 más cercanos</small>
+      </div>
+    </div>
+    <div class="lane t-tertiary st st5">RESULTADOS</div>
+    <div class="results">
+      <div class="res-row top st st5"><span class="rank">1</span><span class="rtag c2">baja del plan</span><span>Para dar de baja tu plan, entrá a Configuración → Suscripción. La baja se hace efectiva al final del período…</span><span class="score"><i style="width:98px"></i>0.89</span></div>
+      <div class="res-row st st6"><span class="rank">2</span><span class="rtag c1">facturación</span><span>Las facturas se emiten el día 1 de cada mes y llegan por email…</span><span class="score"><i style="width:64px"></i>0.58</span></div>
+      <div class="res-row st st7"><span class="rank">3</span><span class="rtag c4">contraseña</span><span>Si olvidaste tu contraseña, usá "Recuperar acceso"…</span><span class="score"><i style="width:23px"></i>0.21</span></div>
+    </div>
+  </div>
+  <p class="note">Todavía <b>no hay LLM</b>: devolvemos documentación relevante, no una respuesta redactada. Eso viene con RAG.</p>
+</section>
+
+<section class="slide" data-sec="07 · Querying">
+  <h2>Hybrid search y reranking</h2>
+  <div class="body cols">
+    <div class="card">
+      <h3 class="t-tertiary">Hybrid search</h3>
+      <p>BM25 + semántica, combinadas con <b>Reciprocal Rank Fusion</b>.</p>
+      <p>Lo léxico gana con nombres propios, códigos y siglas: <code>ERR-4012</code>, "FIUBA".</p>
+    </div>
+    <div class="card key">
+      <h3 class="t-primary">Reranking</h3>
+      <p>Traer top-50 rápido con el bi-encoder.</p>
+      <p>Reordenar a top-5 con un <b>cross-encoder</b>.</p>
+    </div>
+  </div>
+  <div class="flow" style="justify-content:center;margin-top:28px">
+    <div class="node">1M docs</div><span class="arrow">→</span>
+    <div class="node vin">Búsqueda híbrida<small>rápida</small></div><span class="arrow">→</span>
+    <div class="node">top-50</div><span class="arrow">→</span>
+    <div class="node amb">Cross-encoder<small>preciso</small></div><span class="arrow">→</span>
+    <div class="node ter">top-5</div>
+  </div>
+  <p class="note">¿Cómo medimos? <b>recall@k</b> (¿está el bueno entre los k?), <b>MRR</b> y <b>nDCG</b> (¿qué tan arriba quedó?).</p>
+</section>
+
+<section class="slide" data-sec="07 · Querying">
+  <h2>Mejorar la query</h2>
+  <div class="body cols" style="--n:3">
+    <div class="card"><h3 class="t-primary">Query rewriting</h3><p>Un LLM reescribe la pregunta para que busque mejor.</p><p class="t-muted">"y eso cuánto sale?" → "precio del plan Pro"</p></div>
+    <div class="card"><h3 class="t-primary">Multi-query</h3><p>Generar varias versiones, buscar con todas y fusionar resultados.</p></div>
+    <div class="card"><h3 class="t-primary">HyDE</h3><p>Generar una respuesta <b>hipotética</b> y buscar con ella: se parece más a los documentos que la pregunta.</p></div>
+  </div>
+</section>
+
+<!-- 08 -->
+<section class="slide" data-sec="08 · RAG">
+  <h2>Retrieval-Augmented Generation</h2>
+  <div class="body cols">
+    <div>
+      <h3 class="t-tertiary">El problema</h3>
+      <ul>
+        <li>El LLM no conoce <b>tus</b> datos.</li>
+        <li>Tiene fecha de corte.</li>
+        <li>Cuando no sabe, alucina.</li>
+      </ul>
+    </div>
+    <div class="card key">
+      <h3 class="t-primary">La idea</h3>
+      <p><b>Primero buscar</b> lo relevante y <b>después generar</b> con ese contexto en el prompt.</p>
+      <p>Datos actualizados, citas y control de acceso.</p>
+    </div>
+  </div>
+  <p class="note">Límite: si el retrieval falla, la respuesta falla. <b>Garbage in, garbage out.</b></p>
+</section>
+
+<section class="slide" data-sec="08 · RAG">
+  <h2>¿RAG, fine-tuning o contexto largo?</h2>
+  <div class="body">
+    <table>
+      <tr><th></th><th>RAG</th><th>Fine-tuning</th><th>Contexto largo</th></tr>
+      <tr><td><b>Sirve para</b></td><td>Conocimiento que cambia</td><td>Estilo, formato, tareas</td><td>Pocos documentos</td></tr>
+      <tr><td><b>Actualizar datos</b></td><td>Re-indexar</td><td>Re-entrenar</td><td>Cambiar el prompt</td></tr>
+      <tr><td><b>Citas</b></td><td>Sí</td><td>No</td><td>Parcial</td></tr>
+      <tr><td><b>Costo por consulta</b></td><td>Bajo</td><td>Bajo</td><td>Alto (muchos tokens)</td></tr>
+      <tr><td><b>Permisos</b></td><td>Filtros por usuario</td><td>Difícil</td><td>Manual</td></tr>
+    </table>
+  </div>
+  <p class="note">No son excluyentes: se combinan.</p>
+</section>
+
+<!-- 09 -->
+<section class="slide" data-sec="09 · Pipeline de RAG">
+  <h2>Pipeline de RAG · Indexación</h2>
+  <div class="body pipe idx">
+    <div class="pipe-head"><span class="lane" style="margin:0">INDEXACIÓN · OFFLINE</span><button class="pplay">▶ Recorrer paso a paso</button></div>
+    <div class="psteps">
+      <button class="pstep " data-i="0"><span class="pn">1</span><b>Documentos</b><small>las fuentes</small></button><span class="pconn"></span><button class="pstep " data-i="1"><span class="pn">2</span><b>Parsing</b><small>texto limpio</small></button><span class="pconn"></span><button class="pstep " data-i="2"><span class="pn">3</span><b>Chunking</b><small>una idea por pedazo</small></button><span class="pconn"></span><button class="pstep " data-i="3"><span class="pn">4</span><b>Embeddings</b><small>chunk → vector</small></button><span class="pconn"></span><button class="pstep " data-i="4"><span class="pn">5</span><b>Vector DB</b><small>guardar + indexar</small></button>
+    </div>
+    <div class="pdetail">
+      <div class="pinfo"><div><h3>1 · Documentos</h3><p>Juntamos las fuentes de conocimiento: PDFs, wikis, tickets, páginas de ayuda, código.</p></div><pre>ayuda.md
+terminos.pdf
+faq.html</pre></div>
+      <div class="pinfo"><div><h3>2 · Parsing</h3><p>Extraemos el texto útil: sacamos menús y encabezados repetidos, pasamos tablas a texto.</p></div><pre># Baja del plan
+Para dar de baja tu plan, entrá a
+Configuración → Suscripción…</pre></div>
+      <div class="pinfo"><div><h3>3 · Chunking</h3><p>Dividimos el texto en chunks. Cada uno debería hablar de un solo tema.</p></div><pre>chunk 1 · facturación
+chunk 2 · baja del plan
+chunk 3 · envíos
+chunk 4 · contraseña</pre></div>
+      <div class="pinfo"><div><h3>4 · Embeddings</h3><p>Cada chunk pasa por el encoder y sale un vector de tamaño fijo.</p></div><pre>chunk 2 → [0.12, -0.48, 0.07, …]
+          384 dimensiones</pre></div>
+      <div class="pinfo"><div><h3>5 · Vector DB</h3><p>Guardamos vector, texto y metadata. La DB arma el índice para buscar rápido.</p></div><pre>{ &quot;id&quot;: &quot;ayuda#2&quot;,
+  &quot;vector&quot;: [0.12, -0.48, …],
+  &quot;text&quot;: &quot;Para dar de baja…&quot;,
+  &quot;source&quot;: &quot;ayuda.md&quot; }</pre></div>
+    </div>
+  </div>
+  <p class="note">Se hace <b>una vez</b>, y de nuevo cuando cambian los documentos.</p>
+</section>
+
+<section class="slide" data-sec="09 · Pipeline de RAG">
+  <h2>Pipeline de RAG · Consulta</h2>
+  <div class="body pipe qry">
+    <div class="pipe-head"><span class="lane" style="margin:0">CONSULTA · ONLINE</span><button class="pplay">▶ Recorrer paso a paso</button></div>
+    <div class="psteps">
+      <button class="pstep " data-i="0"><span class="pn">1</span><b>Pregunta</b><small>del usuario</small></button><span class="pconn"></span><button class="pstep " data-i="1"><span class="pn">2</span><b>Rewriting</b><small>opcional</small></button><span class="pconn"></span><button class="pstep " data-i="2"><span class="pn">3</span><b>Búsqueda</b><small>híbrida</small></button><span class="pconn"></span><button class="pstep " data-i="3"><span class="pn">4</span><b>Reranking</b><small>cross-encoder</small></button><span class="pconn"></span><button class="pstep llm" data-i="4"><span class="pn">5</span><b>Prompt</b><small>+ contexto</small></button><span class="pconn"></span><button class="pstep llm" data-i="5"><span class="pn">6</span><b>LLM</b><small>genera</small></button><span class="pconn"></span><button class="pstep llm" data-i="6"><span class="pn">7</span><b>Respuesta</b><small>con citas</small></button>
+    </div>
+    <div class="pdetail">
+      <div class="pinfo"><div><h3>1 · Pregunta</h3><p>Llega la pregunta tal como la escribió el usuario.</p></div><pre>&quot;¿Cómo doy de baja mi plan?&quot;</pre></div>
+      <div class="pinfo"><div><h3>2 · Rewriting</h3><p>Un LLM la reformula para que busque mejor: sin ambigüedad, con sinónimos.</p></div><pre>&quot;cancelar suscripción / baja del plan&quot;</pre></div>
+      <div class="pinfo"><div><h3>3 · Búsqueda</h3><p>Se vectoriza con el mismo modelo y se busca en la Vector DB, combinando semántica y BM25.</p></div><pre>→ top-50 candidatos</pre></div>
+      <div class="pinfo"><div><h3>4 · Reranking</h3><p>Un cross-encoder reordena los candidatos con más precisión. Nos quedamos con los mejores.</p></div><pre>1. baja del plan   0.94
+2. facturación     0.41
+3. contraseña      0.12</pre></div>
+      <div class="pinfo"><div><h3>5 · Prompt</h3><p>Armamos el prompt: instrucciones, los chunks recuperados y la pregunta.</p></div><pre>[system] Respondé solo con el contexto.
+[1] Para dar de baja tu plan…
+[pregunta] ¿Cómo doy de baja mi plan?</pre></div>
+      <div class="pinfo"><div><h3>6 · LLM</h3><p>El LLM redacta la respuesta apoyándose en el contexto, no en su memoria.</p></div><pre>→ generación token a token</pre></div>
+      <div class="pinfo"><div><h3>7 · Respuesta</h3><p>Devolvemos la respuesta con referencias a las fuentes.</p></div><pre>&quot;Entrá a Configuración → Suscripción [1].
+ La baja se aplica al final del período [1].&quot;</pre></div>
+    </div>
+  </div>
+  <p class="note">Se hace <b>en cada pregunta</b>. La búsqueda usa la Vector DB que armó la indexación.</p>
+</section>
+
+<section class="slide" data-sec="09 · Pipeline de RAG">
+  <h2>Arquitectura de un pipeline de RAG</h2>
+  <div class="body archwrap" data-flow="all">
+    <svg class="arch-rag" viewBox="0 0 1152 410" role="img" aria-label="Arquitectura de RAG en dos columnas. A la izquierda, el pipeline de indexación: documentos nuevos, job de chunking, API de embeddings de OpenAI y PostgreSQL con pgvector. A la derecha, el usuario le pregunta al agente; el agente embebe la pregunta con OpenAI, busca en pgvector y llama al LLM.">
+      <defs>
+        <marker id="ar-i" orient="auto-start-reverse" markerWidth="10" markerHeight="10" refX="9" refY="5" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#B87A16"/></marker>
+        <marker id="ar-q" orient="auto-start-reverse" markerWidth="10" markerHeight="10" refX="9" refY="5" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#8B3A4A"/></marker>
+        <marker id="ar-l" orient="auto-start-reverse" markerWidth="10" markerHeight="10" refX="9" refY="5" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#C4532B"/></marker>
+      </defs>
+
+      <!-- contenedores -->
+      <rect class="cont cont-i" x="8" y="8" width="640" height="394" rx="16"/>
+      <text class="lane-t" x="32" y="40" fill="#8A5A12">PIPELINE DE RAG · INDEXACIÓN</text>
+      <rect class="cont cont-q" x="672" y="8" width="472" height="394" rx="16"/>
+      <text class="lane-t" x="696" y="40" fill="#8B3A4A">WORKFLOW · USUARIO ↔ AGENTE</text>
+
+      <!-- flechas: indexación -->
+      <g class="i" fill="none" stroke="#B87A16" stroke-width="2.5">
+        <line x1="282" y1="106" x2="372" y2="106" marker-end="url(#ar-i)"/>
+        <polyline points="440,150 440,192 157,192 157,234" marker-start="url(#ar-i)" marker-end="url(#ar-i)"/>
+        <line x1="560" y1="150" x2="560" y2="220" marker-end="url(#ar-i)"/>
+      </g>
+      <g class="i"><text class="al" x="176" y="184">embed(chunks)</text><text class="al" x="574" y="196">INSERT</text></g>
+
+      <!-- flechas: consulta -->
+      <g class="q" fill="none" stroke="#8B3A4A" stroke-width="2.5">
+        <line x1="758" y1="168" x2="758" y2="214" marker-start="url(#ar-q)" marker-end="url(#ar-q)"/>
+        <line x1="714" y1="286" x2="628" y2="286" marker-start="url(#ar-q)" marker-end="url(#ar-q)"/>
+        <polyline points="758,352 758,378 157,378 157,340" marker-start="url(#ar-q)" marker-end="url(#ar-q)"/>
+      </g>
+      <g class="q" fill="none" stroke="#C4532B" stroke-width="2.5"><line x1="804" y1="278" x2="948" y2="278" marker-start="url(#ar-l)" marker-end="url(#ar-l)"/></g>
+      <g class="q"><text class="al" x="300" y="370">embed(pregunta)</text><text class="al" x="812" y="264" fill="#A3421F">prompt + chunks</text></g>
+
+      <!-- componentes: indexación -->
+      <g class="i"><rect class="ab" x="32" y="64" width="250" height="84" rx="10"/><text class="at" x="157" y="96">Documentos nuevos</text><text class="as" x="157" y="120">PDF · Markdown · Drive</text></g>
+      <g class="i"><rect class="ab" x="374" y="64" width="250" height="84" rx="10"/><text class="at" x="499" y="96">Job de chunking</text><text class="as" x="499" y="120">cron / worker</text></g>
+      <g><rect class="ab ext" x="32" y="236" width="250" height="102" rx="10"/>
+        <image href="https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1.80.0/icons/openai.svg" x="50" y="262" width="48" height="48"/>
+        <text class="at sa" x="112" y="274">OpenAI</text><text class="as sa" x="112" y="298">Embeddings API</text><text class="as sa" x="112" y="318">text-embedding-3-small</text></g>
+      <g>
+        <path class="ab" d="M374 236 V336 A125 14 0 0 0 624 336 V236"/>
+        <ellipse class="ab" cx="499" cy="236" rx="125" ry="14"/>
+        <image href="https://cdn.simpleicons.org/postgresql/4169E1" x="394" y="262" width="46" height="46"/>
+        <text class="at sa" x="454" y="276">PostgreSQL</text><text class="as sa" x="454" y="300">+ pgvector</text>
+      </g>
+
+      <!-- componentes: workflow -->
+      <g class="q">
+        <g class="ico" stroke="#2E221C"><circle cx="758" cy="80" r="15"/><path d="M730 128 C730 108 744 100 758 100 C772 100 786 108 786 128 Z"/></g>
+        <text class="at" x="758" y="150">Usuario</text>
+        <path class="bubble-u" d="M818 62 H1112 A10 10 0 0 1 1122 72 V112 A10 10 0 0 1 1112 122 H832 L818 134 L820 122 A10 10 0 0 1 810 112 V72 A10 10 0 0 1 818 62 Z"/>
+        <text class="ask" x="966" y="92">"¿Cómo doy de baja mi plan?"</text>
+      </g>
+      <g class="q"><g class="ico" stroke="#8B3A4A"><line x1="758" y1="240" x2="758" y2="230"/><circle cx="758" cy="226" r="4"/><rect x="730" y="240" width="56" height="44" rx="10"/><rect x="723" y="254" width="7" height="16" rx="2"/><rect x="786" y="254" width="7" height="16" rx="2"/><circle cx="746" cy="259" r="3.5" fill="#8B3A4A"/><circle cx="770" cy="259" r="3.5" fill="#8B3A4A"/><line x1="748" y1="273" x2="768" y2="273"/></g><text class="at" x="758" y="316">Agente</text><text class="as" x="758" y="338">orquesta la consulta</text></g>
+      <g class="q"><rect class="ab llm" x="950" y="236" width="172" height="84" rx="10"/><text class="at" x="1036" y="268">LLM</text><text class="as" x="1036" y="292">genera la respuesta</text></g>
+
+      <!-- pasos -->
+      <g class="i bi"><circle class="bd" cx="327" cy="106" r="12"/><text class="bt" x="327" y="106">A</text></g><g class="i bi"><circle class="bd" cx="300" cy="192" r="12"/><text class="bt" x="300" y="192">B</text></g><g class="i bi"><circle class="bd" cx="560" cy="176" r="12"/><text class="bt" x="560" y="176">C</text></g>
+      <g class="q bq"><circle class="bd" cx="738" cy="195" r="12"/><text class="bt" x="738" y="195">1</text></g><g class="q bq"><circle class="bd" cx="778" cy="195" r="12"/><text class="bt" x="778" y="195">5</text></g><g class="q bq"><circle class="bd" cx="660" cy="378" r="12"/><text class="bt" x="660" y="378">2</text></g><g class="q bq"><circle class="bd" cx="660" cy="286" r="12"/><text class="bt" x="660" y="286">3</text></g><g class="q bl"><circle class="bd" cx="876" cy="278" r="12"/><text class="bt" x="876" y="278">4</text></g>
+    </svg>
+    <div class="arch-ctrl">
+      <div class="seg"><button data-f="all" class="on">Todo</button><button data-f="i">Indexación</button><button data-f="q">Consulta</button></div>
+      <p class="arch-cap" data-f="i"><b>A</b> llega un documento nuevo · <b>B</b> el job lo divide en chunks y pide sus vectores a la API · <b>C</b> guarda texto + vector + metadata en pgvector.</p>
+      <p class="arch-cap" data-f="q"><b>1</b> pregunta · <b>2</b> el agente embebe la pregunta · <b>3</b> busca el top-5 en pgvector · <b>4</b> arma el prompt y llama al LLM · <b>5</b> responde con citas.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="09 · Pipeline de RAG">
+  <h2>El prompt</h2>
+  <div class="body">
+<pre><span class="c"># system</span>
+Respondé usando <span class="k">solo</span> el contexto. Si la respuesta no está, decí que no lo sabés.
+Citá la fuente de cada afirmación como [n].
+
+<span class="c"># contexto (top-5 del reranker)</span>
+[1] <span class="s">faq.pdf</span>  · "Para dar de baja tu plan, entrá a Configuración → Suscripción…"
+[2] <span class="s">terminos.md</span> · "La baja se hace efectiva al final del período facturado…"
+
+<span class="c"># pregunta</span>
+¿Cómo cancelo mi plan y cuándo deja de cobrarse?</pre>
+  </div>
+  <p class="note">En vivo: el LLM decide <b>cuándo y qué buscar</b> usando la búsqueda como una <b>tool</b>. Puente a la próxima clase.</p>
+</section>
+
+<section class="slide" data-sec="09 · Pipeline de RAG">
+  <h2>Cuando falla, ¿dónde mirar?</h2>
+  <div class="body cols" style="--n:3">
+    <div class="card"><h3 class="t-tertiary">No lo encontró</h3><p>Chunking, modelo de embeddings o falta búsqueda híbrida.</p></div>
+    <div class="card"><h3 class="t-tertiary">Lo encontró, quedó abajo</h3><p>Falta reranking, o el k es muy chico.</p></div>
+    <div class="card"><h3 class="t-tertiary">Lo tenía y lo ignoró</h3><p>Prompt, demasiado contexto o modelo débil.</p></div>
+  </div>
+  <div class="card key" style="margin-top:8px">
+    <h3 class="t-primary">Evaluar de punta a punta</h3>
+    <p><b>Faithfulness</b> (¿se apoya en el contexto?) · <b>Relevancia</b> de la respuesta · <b>LLM-as-judge</b> · frameworks como <b>RAGAS</b>.</p>
+  </div>
+</section>
+
+<!-- Carátula MCP -->
+<section class="slide cover mcp-cover">
+  <svg class="hub" viewBox="0 0 520 520" aria-hidden="true">
+    <line class="spoke" x1="260.0" y1="112.0" x2="260.0" y2="190.0"/><line class="spoke" x1="388.2" y1="186.0" x2="320.6" y2="225.0"/><line class="spoke" x1="388.2" y1="334.0" x2="320.6" y2="295.0"/><line class="spoke" x1="260.0" y1="408.0" x2="260.0" y2="330.0"/><line class="spoke" x1="131.8" y1="334.0" x2="199.4" y2="295.0"/><line class="spoke" x1="131.8" y1="186.0" x2="199.4" y2="225.0"/>
+    <circle cx="260" cy="260" r="70" fill="#FFFFFF" stroke="#C4532B" stroke-width="5"/>
+    <image href="https://cdn.simpleicons.org/modelcontextprotocol" x="236" y="214" width="48" height="48"/>
+    <text x="260" y="288" class="hubt">MCP</text>
+    <circle class="hubn" cx="260.0" cy="70.0" r="40"/><image href="https://cdn.simpleicons.org/github" x="242.0" y="52.0" width="36" height="36"/><circle class="hubn" cx="424.5" cy="165.0" r="40"/><image href="https://cdn.simpleicons.org/postgresql" x="406.5" y="147.0" width="36" height="36"/><circle class="hubn" cx="424.5" cy="355.0" r="40"/><image href="https://cdn.simpleicons.org/googledrive" x="406.5" y="337.0" width="36" height="36"/><circle class="hubn" cx="260.0" cy="450.0" r="40"/><image href="https://cdn.simpleicons.org/notion" x="242.0" y="432.0" width="36" height="36"/><circle class="hubn" cx="95.5" cy="355.0" r="40"/><image href="https://cdn.simpleicons.org/jira" x="77.5" y="337.0" width="36" height="36"/><circle class="hubn" cx="95.5" cy="165.0" r="40"/><image href="https://cdn.simpleicons.org/figma" x="77.5" y="147.0" width="36" height="36"/>
+  </svg>
+  <p class="kicker">10 · Model Context Protocol</p>
+  <h1>MCP Servers</h1>
+  <p class="sub">Darle herramientas a un agente,</p>
+  <p class="sub" style="margin-top:4px"><span class="t-primary">escribiéndolas una sola vez</span>.</p>
+</section>
+
+<!-- 10 · MCP -->
+<section class="slide" data-sec="10 · MCP">
+  <h2>MCP: el problema de las N × M integraciones</h2>
+  <div class="body">
+    <svg class="nxm" viewBox="0 0 1152 330" role="img" aria-label="Sin MCP, cada app integra cada herramienta: 9 conexiones. Con MCP, cada app y cada herramienta se conectan una vez al protocolo: 6 conexiones.">
+      <text class="lane-t" x="20" y="16" fill="#8B3A4A">SIN MCP · N × M = 9 INTEGRACIONES</text>
+      <text class="lane-t" x="632" y="16" fill="#A3421F">CON MCP · N + M = 6</text>
+      <line x1="190" y1="66" x2="350" y2="66" class="mess"/><line x1="190" y1="66" x2="350" y2="146" class="mess"/><line x1="190" y1="66" x2="350" y2="226" class="mess"/><line x1="190" y1="146" x2="350" y2="66" class="mess"/><line x1="190" y1="146" x2="350" y2="146" class="mess"/><line x1="190" y1="146" x2="350" y2="226" class="mess"/><line x1="190" y1="226" x2="350" y2="66" class="mess"/><line x1="190" y1="226" x2="350" y2="146" class="mess"/><line x1="190" y1="226" x2="350" y2="226" class="mess"/><image href="https://cdn.simpleicons.org/claude" x="20" y="52" width="28" height="28"/><rect class="ab" x="62" y="40" width="148" height="52" rx="9"/><text class="at sm" x="136" y="66">Claude Desktop</text><image href="https://cdn.simpleicons.org/cursor" x="20" y="132" width="28" height="28"/><rect class="ab" x="62" y="120" width="148" height="52" rx="9"/><text class="at sm" x="136" y="146">IDE (Cursor)</text><g class="ico-r" transform="translate(20 212)"><line x1="14" y1="5" x2="14" y2="1"/><rect x="3" y="5" width="22" height="18" rx="5"/><circle cx="10" cy="13" r="1.6" fill="#8B3A4A"/><circle cx="18" cy="13" r="1.6" fill="#8B3A4A"/><line x1="10" y1="18.5" x2="18" y2="18.5"/></g><rect class="ab" x="62" y="200" width="148" height="52" rx="9"/><text class="at sm" x="136" y="226">Nuestro agente</text><rect class="ab" x="350" y="40" width="170" height="52" rx="9"/><text class="at sm" x="435.0" y="66">Docs · pgvector</text><rect class="ab" x="350" y="120" width="170" height="52" rx="9"/><text class="at sm" x="435.0" y="146">Suscripciones</text><rect class="ab" x="350" y="200" width="170" height="52" rx="9"/><text class="at sm" x="435.0" y="226">Tickets</text><line x1="802" y1="66" x2="868" y2="66" class="clean"/><line x1="904" y1="66" x2="962" y2="66" class="clean"/><line x1="802" y1="146" x2="868" y2="146" class="clean"/><line x1="904" y1="146" x2="962" y2="146" class="clean"/><line x1="802" y1="226" x2="868" y2="226" class="clean"/><line x1="904" y1="226" x2="962" y2="226" class="clean"/><image href="https://cdn.simpleicons.org/claude" x="632" y="52" width="28" height="28"/><rect class="ab" x="674" y="40" width="148" height="52" rx="9"/><text class="at sm" x="748" y="66">Claude Desktop</text><image href="https://cdn.simpleicons.org/cursor" x="632" y="132" width="28" height="28"/><rect class="ab" x="674" y="120" width="148" height="52" rx="9"/><text class="at sm" x="748" y="146">IDE (Cursor)</text><g class="ico-r" transform="translate(632 212)"><line x1="14" y1="5" x2="14" y2="1"/><rect x="3" y="5" width="22" height="18" rx="5"/><circle cx="10" cy="13" r="1.6" fill="#8B3A4A"/><circle cx="18" cy="13" r="1.6" fill="#8B3A4A"/><line x1="10" y1="18.5" x2="18" y2="18.5"/></g><rect class="ab" x="674" y="200" width="148" height="52" rx="9"/><text class="at sm" x="748" y="226">Nuestro agente</text><rect class="ab" x="962" y="40" width="170" height="52" rx="9"/><text class="at sm" x="1047.0" y="66">Docs · pgvector</text><rect class="ab" x="962" y="120" width="170" height="52" rx="9"/><text class="at sm" x="1047.0" y="146">Suscripciones</text><rect class="ab" x="962" y="200" width="170" height="52" rx="9"/><text class="at sm" x="1047.0" y="226">Tickets</text><rect x="868" y="30" width="36" height="232" rx="8" fill="#C4532B"/><text x="886" y="146" class="mcpv" transform="rotate(-90 886 146)">MCP</text><image href="https://cdn.simpleicons.org/modelcontextprotocol" x="862" y="274" width="48" height="48"/>
+    </svg>
+  </div>
+  <p class="note"><b>MCP</b> (Model Context Protocol): protocolo abierto, publicado por Anthropic en 2024. Cada herramienta se escribe <b>una vez</b> y la usa cualquier app compatible: "el USB-C de las apps de IA".</p>
+</section>
+
+<section class="slide" data-sec="10 · MCP">
+  <h2>Caso de uso: nuestro RAG como tool</h2>
+  <div class="body cols" style="grid-template-columns: 1.3fr 1fr; gap: 36px">
+    <div class="trace">
+      <div class="tr"><span class="tk">usuario</span><span class="bubble">"¿Cómo doy de baja mi plan?"</span></div>
+      <div class="tr"><span class="tk">agente piensa</span><span>Necesito buscar en la documentación.</span></div>
+      <div class="tr call"><span class="tk">tool call</span><code>buscar_documentacion(query="baja del plan")</code></div>
+      <div class="tr"><span class="tk">resultado</span><span class="t-muted">[1] Para dar de baja tu plan, entrá a Configuración → Suscripción…</span></div>
+      <div class="tr"><span class="tk">respuesta</span><span>Entrá a Configuración → Suscripción [1].</span></div>
+    </div>
+    <div class="card key srv">
+      <h3 class="t-primary">Servidor MCP · ayuda</h3>
+      <p><code>buscar_documentacion(query)</code><br><span class="t-muted">la búsqueda en pgvector que ya armamos</span></p>
+      <p><code>estado_suscripcion(user_id)</code><br><span class="t-muted">consulta la base de clientes</span></p>
+      <p><code>crear_ticket(asunto, detalle)</code><br><span class="t-muted">deriva a una persona</span></p>
+    </div>
+  </div>
+  <p class="note">El agente <b>decide cuándo buscar</b> y con qué texto, en vez de buscar siempre: <b>agentic RAG</b>.</p>
+</section>
+
+<section class="slide" data-sec="10 · MCP">
+  <h2>Arquitectura de MCP</h2>
+  <div class="body">
+    <svg class="mcparch" viewBox="0 0 1152 236" role="img" aria-label="Un host contiene el LLM y un client por servidor. Cada client habla JSON-RPC con un server, local o remoto, y cada server accede a su fuente de datos.">
+      <rect class="host" x="2" y="4" width="470" height="228" rx="14"/>
+      <text class="lane-t" x="22" y="26" fill="#8B3A4A">HOST · NUESTRO AGENTE, CLAUDE DESKTOP, UN IDE</text>
+      <rect class="ab llm" x="24" y="72" width="190" height="96" rx="10"/><text class="at" x="119" y="110">LLM</text><text class="as" x="119" y="134">elige qué tool usar</text>
+      <line x1="214" y1="120" x2="262" y2="61" class="dsh2"/><line x1="214" y1="120" x2="262" y2="129" class="dsh2"/><line x1="214" y1="120" x2="262" y2="197" class="dsh2"/>
+      <line x1="452" y1="61" x2="568" y2="61" class="rpc"/><line x1="808" y1="61" x2="918" y2="61" class="dsh"/><rect class="ab cl" x="262" y="36" width="190" height="50" rx="9"/><text class="at sm" x="357" y="61">Client 1</text><rect class="ab sv" x="568" y="36" width="240" height="50" rx="9"/><text class="at sm" x="688" y="53">Server · ayuda</text><text class="as" x="688" y="72">local · stdio</text><rect class="ab" x="918" y="36" width="214" height="50" rx="9"/><text class="as" x="1025" y="61" style="font-size:15px;fill:#2E221C">pgvector</text><line x1="452" y1="129" x2="568" y2="129" class="rpc"/><line x1="808" y1="129" x2="918" y2="129" class="dsh"/><rect class="ab cl" x="262" y="104" width="190" height="50" rx="9"/><text class="at sm" x="357" y="129">Client 2</text><rect class="ab sv" x="568" y="104" width="240" height="50" rx="9"/><text class="at sm" x="688" y="121">Server · tickets</text><text class="as" x="688" y="140">remoto · HTTP</text><rect class="ab" x="918" y="104" width="214" height="50" rx="9"/><text class="as" x="1025" y="129" style="font-size:15px;fill:#2E221C">API de tickets</text><line x1="452" y1="197" x2="568" y2="197" class="rpc"/><line x1="808" y1="197" x2="918" y2="197" class="dsh"/><rect class="ab cl" x="262" y="172" width="190" height="50" rx="9"/><text class="at sm" x="357" y="197">Client 3</text><rect class="ab sv" x="568" y="172" width="240" height="50" rx="9"/><text class="at sm" x="688" y="189">Server · GitHub</text><text class="as" x="688" y="208">remoto · HTTP</text><rect class="ab" x="918" y="172" width="214" height="50" rx="9"/><text class="as" x="1025" y="197" style="font-size:15px;fill:#2E221C">API de GitHub</text>
+      <text class="al" x="476" y="52">JSON-RPC</text>
+    </svg>
+    <div class="props" style="margin-top:22px">
+      <div class="key"><h3 class="t-primary">Tools</h3><p>Acciones. <b>El modelo</b> decide cuándo usarlas: buscar, crear un ticket.</p></div>
+      <div><h3>Resources</h3><p>Datos de solo lectura. <b>La app</b> decide cuándo cargarlos: un archivo, un esquema.</p></div>
+      <div><h3>Prompts</h3><p>Plantillas reutilizables. <b>El usuario</b> las elige: "resumí este ticket".</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="10 · MCP">
+  <h2>Cómo hablan: JSON-RPC 2.0</h2>
+  <div class="body pipe mcp">
+    <div class="pipe-head"><span class="lane" style="margin:0">CLIENT ↔ SERVER</span><button class="pplay">▶ Recorrer paso a paso</button></div>
+    <div class="psteps">
+      <button class="pstep" data-i="0"><span class="pn">1</span><b>server/discover</b><small>opcional</small></button><span class="pconn"></span><button class="pstep" data-i="1"><span class="pn">2</span><b>tools/list</b><small>qué hay</small></button><span class="pconn"></span><button class="pstep llm" data-i="2"><span class="pn">3</span><b>El LLM elige</b><small>tool use</small></button><span class="pconn"></span><button class="pstep" data-i="3"><span class="pn">4</span><b>tools/call</b><small>ejecutar</small></button><span class="pconn"></span><button class="pstep" data-i="4"><span class="pn">5</span><b>Resultado</b><small>vuelve al LLM</small></button>
+    </div>
+    <div class="pdetail">
+      <div class="pinfo"><div><h3>1 · server/discover</h3><p>El client le pregunta al server qué versiones y capacidades soporta. Es opcional: también puede llamar directo.</p></div><pre class="json">→ {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 1, &quot;method&quot;: &quot;server/discover&quot;}
+← {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 1, &quot;result&quot;: {
+     &quot;capabilities&quot;: { &quot;tools&quot;: {} }, … } }</pre></div>
+      <div class="pinfo"><div><h3>2 · tools/list</h3><p>El client pide la lista de tools. Cada una trae nombre, descripción y JSON Schema de sus argumentos.</p></div><pre class="json">← { &quot;tools&quot;: [ {
+    &quot;name&quot;: &quot;buscar_documentacion&quot;,
+    &quot;description&quot;: &quot;Busca en el centro de ayuda…&quot;,
+    &quot;inputSchema&quot;: { &quot;type&quot;: &quot;object&quot;,
+      &quot;properties&quot;: { &quot;query&quot;: { &quot;type&quot;: &quot;string&quot; } },
+      &quot;required&quot;: [&quot;query&quot;] } } ] }</pre></div>
+      <div class="pinfo"><div><h3>3 · El LLM elige</h3><p>El host le pasa esas tools al LLM. El modelo responde pidiendo usar una, con sus argumentos.</p></div><pre class="json">tool_use:
+  name:  buscar_documentacion
+  input: { &quot;query&quot;: &quot;baja del plan&quot; }</pre></div>
+      <div class="pinfo"><div><h3>4 · tools/call</h3><p>El client manda la llamada al server. Cada request lleva su versión y capacidades en _meta.</p></div><pre class="json">→ { &quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 3, &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;buscar_documentacion&quot;,
+    &quot;arguments&quot;: { &quot;query&quot;: &quot;baja del plan&quot; },
+  &quot;_meta&quot;: {
+    &quot;io.modelcontextprotocol/protocolVersion&quot;: &quot;2026-07-28&quot;,
+    &quot;io.modelcontextprotocol/clientCapabilities&quot;: {} } } }</pre></div>
+      <div class="pinfo"><div><h3>5 · Resultado</h3><p>El server ejecuta la búsqueda y devuelve el contenido. El host lo agrega al contexto del LLM.</p></div><pre class="json">← { &quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 3, &quot;result&quot;: {
+    &quot;resultType&quot;: &quot;complete&quot;,
+    &quot;content&quot;: [ { &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;[1] Para dar de baja tu plan…&quot; } ] } }</pre></div>
+    </div>
+  </div>
+  <p class="note">Desde la revisión <b>2026-07-28</b> el protocolo es <b>stateless</b>: no hay handshake inicial, cada request viaja con su contexto. JSON simplificado.</p>
+</section>
+
+<section class="slide" data-sec="10 · MCP">
+  <h2>Cómo se construye un servidor</h2>
+  <div class="body cols" style="grid-template-columns: 1.25fr 1fr; gap: 32px">
+    <div>
+      <div class="lane t-tertiary">SERVER.PY · SDK DE PYTHON (V2)</div>
+<pre class="codeblk"><span class="k">from</span> mcp.server <span class="k">import</span> MCPServer
+
+mcp = MCPServer(<span class="s">"ayuda"</span>)
+
+<span class="k">@mcp.tool()</span>
+<span class="k">def</span> buscar_documentacion(query: str) -> str:
+    <span class="s">"""Busca en el centro de ayuda los fragmentos
+    más relevantes para la pregunta del usuario."""</span>
+    chunks = buscar_en_pgvector(query, k=5)  <span class="c"># lo que ya armamos</span>
+    <span class="k">return</span> <span class="s">"\n"</span>.join(chunks)
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    mcp.run()  <span class="c"># stdio por defecto</span></pre>
+    </div>
+    <div>
+      <div class="lane t-tertiary">LO QUE VE EL MODELO (TOOLS/LIST)</div>
+<pre class="codeblk">{ <span class="s">"name"</span>: <span class="s">"buscar_documentacion"</span>,
+  <span class="s">"description"</span>: <span class="s">"Busca en el centro de ayuda…"</span>,
+  <span class="s">"inputSchema"</span>: {
+    <span class="s">"properties"</span>: {
+      <span class="s">"query"</span>: { <span class="s">"type"</span>: <span class="s">"string"</span> } },
+    <span class="s">"required"</span>: [<span class="s">"query"</span>] } }</pre>
+      <ul class="tight" style="margin-top:18px">
+        <li><b>Type hints</b> → JSON Schema de los argumentos.</li>
+        <li><b>Docstring</b> → descripción: es lo que el modelo lee para decidir cuándo usarla.</li>
+        <li><code>uv run mcp dev server.py</code> abre el Inspector para probarlo.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="10 · MCP">
+  <h2>Cómo se expone</h2>
+  <div class="body cols">
+    <div class="card">
+      <h3 class="t-tertiary">stdio · local</h3>
+      <p>El host lanza el server como un <b>proceso</b> y le habla por entrada/salida estándar.</p>
+      <p class="t-muted" style="font-size:16px;margin:8px 0">Config del host (ej. Claude Desktop):</p>
+<pre class="codeblk sm">{ <span class="s">"mcpServers"</span>: {
+    <span class="s">"ayuda"</span>: {
+      <span class="s">"command"</span>: <span class="s">"uv"</span>,
+      <span class="s">"args"</span>: [<span class="s">"run"</span>, <span class="s">"server.py"</span>] } } }</pre>
+      <p style="margin-top:10px">Ideal para desarrollo y herramientas de escritorio.</p>
+    </div>
+    <div class="card">
+      <h3 class="t-tertiary">Streamable HTTP · remoto</h3>
+      <p>El server corre como un <b>servicio web</b>: cada mensaje es un POST a un endpoint.</p>
+      <p class="t-muted" style="font-size:16px;margin:8px 0">Mismo server, otro transporte:</p>
+<pre class="codeblk sm">mcp.run(transport=<span class="s">"streamable-http"</span>,
+        port=<span class="s">8000</span>)
+<span class="c"># → https://ayuda.miempresa.com/mcp</span></pre>
+      <p style="margin-top:10px">Con autenticación (OAuth): para compartirlo con un equipo o producto.</p>
+    </div>
+  </div>
+  <p class="note">⚠ Lo que devuelve una tool <b>entra al contexto del modelo</b>: mínimo privilegio y cuidado con <b>prompt injection</b>. Hay servers listos para GitHub, Postgres, Slack, Drive…</p>
+</section>
+
+<section class="slide" data-sec="10 · MCP">
+  <h2>Escalar: muchos agentes, un solo MCP</h2>
+  <div class="body">
+    <svg class="multi" viewBox="0 0 1152 390" role="img" aria-label="Cuatro agentes distintos, cada uno con sus usuarios, se conectan al mismo servidor MCP, que es el único conectado a pgvector, la base de clientes y el sistema de tickets.">
+      <defs><marker id="ma-q" orient="auto" markerWidth="9" markerHeight="9" refX="8" refY="4.5" markerUnits="userSpaceOnUse"><path d="M0 0 L9 4.5 L0 9 Z" fill="#8B3A4A"/></marker></defs>
+      <text class="lane-t" x="24" y="18" fill="#7A665A">USUARIOS</text>
+      <text class="lane-t" x="170" y="18" fill="#8B3A4A">AGENTES</text>
+      <text class="lane-t" x="530" y="18" fill="#A3421F">UN SOLO SERVIDOR MCP</text>
+      <text class="lane-t" x="880" y="18" fill="#7A665A">DATOS Y SISTEMAS</text>
+      <g class="ico-u" transform="translate(38 54)"><circle cx="16" cy="9" r="8"/><path d="M2 36 C2 25 9 20 16 20 C23 20 30 25 30 36 Z"/></g><line class="ua" x1="82" y1="72" x2="166" y2="72" marker-end="url(#ma-q)"/><rect class="ab" x="170" y="40" width="240" height="64" rx="10"/><g class="ico-r" transform="translate(186 58)"><line x1="14" y1="5" x2="14" y2="1"/><rect x="3" y="5" width="22" height="18" rx="5"/><circle cx="10" cy="13" r="1.6" fill="#8B3A4A"/><circle cx="18" cy="13" r="1.6" fill="#8B3A4A"/><line x1="10" y1="18.5" x2="18" y2="18.5"/></g><text class="at sa" x="226" y="62">Agente web</text><text class="as sa" x="226" y="84">chat del sitio</text><path class="flow" d="M410 72 C470 72 470 150 528 150"/><g class="ico-u" transform="translate(38 144)"><circle cx="16" cy="9" r="8"/><path d="M2 36 C2 25 9 20 16 20 C23 20 30 25 30 36 Z"/></g><line class="ua" x1="82" y1="162" x2="166" y2="162" marker-end="url(#ma-q)"/><rect class="ab" x="170" y="130" width="240" height="64" rx="10"/><g class="ico-r" transform="translate(186 148)"><line x1="14" y1="5" x2="14" y2="1"/><rect x="3" y="5" width="22" height="18" rx="5"/><circle cx="10" cy="13" r="1.6" fill="#8B3A4A"/><circle cx="18" cy="13" r="1.6" fill="#8B3A4A"/><line x1="10" y1="18.5" x2="18" y2="18.5"/></g><text class="at sa" x="226" y="152">Agente WhatsApp</text><text class="as sa" x="226" y="174">mensajería</text><path class="flow" d="M410 162 C470 162 470 170 528 170"/><g class="ico-u" transform="translate(38 234)"><circle cx="16" cy="9" r="8"/><path d="M2 36 C2 25 9 20 16 20 C23 20 30 25 30 36 Z"/></g><line class="ua" x1="82" y1="252" x2="166" y2="252" marker-end="url(#ma-q)"/><rect class="ab" x="170" y="220" width="240" height="64" rx="10"/><g class="ico-r" transform="translate(186 238)"><line x1="14" y1="5" x2="14" y2="1"/><rect x="3" y="5" width="22" height="18" rx="5"/><circle cx="10" cy="13" r="1.6" fill="#8B3A4A"/><circle cx="18" cy="13" r="1.6" fill="#8B3A4A"/><line x1="10" y1="18.5" x2="18" y2="18.5"/></g><text class="at sa" x="226" y="242">Agente interno</text><text class="as sa" x="226" y="264">Slack de soporte</text><path class="flow" d="M410 252 C470 252 470 190 528 190"/><g class="ico-u" transform="translate(38 324)"><circle cx="16" cy="9" r="8"/><path d="M2 36 C2 25 9 20 16 20 C23 20 30 25 30 36 Z"/></g><line class="ua" x1="82" y1="342" x2="166" y2="342" marker-end="url(#ma-q)"/><rect class="ab" x="170" y="310" width="240" height="64" rx="10"/><image href="https://cdn.simpleicons.org/claude" x="186" y="328" width="28" height="28"/><text class="at sa" x="226" y="332">Claude Desktop</text><text class="as sa" x="226" y="354">analistas del equipo</text><path class="flow" d="M410 342 C470 342 470 210 528 210"/><line class="ms" x1="772" y1="200" x2="878" y2="102"/><rect class="ab" x="880" y="70" width="252" height="64" rx="10"/><image href="https://cdn.simpleicons.org/postgresql" x="896" y="88" width="28" height="28"/><text class="at sa" x="936" y="92">PostgreSQL + pgvector</text><text class="as sa" x="936" y="114">documentación (RAG)</text><line class="ms" x1="772" y1="200" x2="878" y2="208"/><rect class="ab" x="880" y="176" width="252" height="64" rx="10"/><g class="ico-db" transform="translate(896 194)"><ellipse cx="14" cy="5" rx="12" ry="4"/><path d="M2 5 V23 A12 4 0 0 0 26 23 V5 M2 14 A12 4 0 0 0 26 14"/></g><text class="at sa" x="936" y="198">Base de clientes</text><text class="as sa" x="936" y="220">suscripciones</text><line class="ms" x1="772" y1="200" x2="878" y2="314"/><rect class="ab" x="880" y="282" width="252" height="64" rx="10"/><image href="https://cdn.simpleicons.org/jira" x="896" y="300" width="28" height="28"/><text class="at sa" x="936" y="304">Sistema de tickets</text><text class="as sa" x="936" y="326">Jira</text>
+      <rect class="ab srvbox" x="530" y="110" width="242" height="190" rx="14"/>
+      <image href="https://cdn.simpleicons.org/modelcontextprotocol" x="550" y="128" width="30" height="30"/>
+      <text class="at sa" x="590" y="143">Servidor MCP · ayuda</text>
+      <text class="mono" x="552" y="190">buscar_documentacion</text>
+      <text class="mono" x="552" y="222">estado_suscripcion</text>
+      <text class="mono" x="552" y="254">crear_ticket</text>
+    </svg>
+  </div>
+  <p class="note">Sin MCP: 4 agentes × 3 sistemas = <b>12 conectores</b>. Con MCP: cada sistema se conecta <b>una vez</b> y todos los agentes usan el mismo servidor. Un cambio (otro modelo de embeddings, un permiso) se hace <b>en un solo lugar</b>.</p>
+</section>
+
+<!-- Guardado para más adelante (sección RAG): animación de un chunk entrando a la ventana de contexto del LLM.
+     Para usarla, pegar este bloque dentro del .body de una slide; el CSS (.ctxdemo, chunkfly) y measureChunk() ya están. -->
+<template id="tpl-chunk-a-contexto">
+    <!-- Animación: un chunk del documento viaja a su lugar en la ventana de contexto del LLM -->
+    <div class="ctxdemo" aria-label="Un chunk del documento se copia a la ventana de contexto del LLM, junto al system prompt y la pregunta">
+      <div class="doc"><small>manual.pdf · 80 págs.</small><i></i><i></i><i class="hit"></i><i></i><i></i><i></i></div>
+      <div class="ctx-arrow">→<small>se divide y se recupera<br>el chunk relevante</small></div>
+      <div class="ctxwin">
+        <span class="lane t-tertiary" style="margin:0">VENTANA DE CONTEXTO DEL LLM</span>
+        <div class="slots"><span class="slot sys">System prompt</span><span class="slot empty"></span><span class="slot q">Pregunta</span><span class="slot free">espacio libre</span></div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="node ter">LLM</div>
+      <div class="mover">chunk 3</div>
+    </div>
+</template>
+</main>
+<div id="ui"><button id="prev" aria-label="Slide anterior">←</button><span id="count"></span><button id="next" aria-label="Slide siguiente">→</button></div>
+<script>
+const deck = document.getElementById('deck');
+const slides = [...deck.querySelectorAll('.slide')];
+for (const s of slides) {
+  if (!s.dataset.sec) continue;
+  const top = document.createElement('header');
+  top.className = 'top';
+  top.innerHTML = `<span class="sec">${s.dataset.sec}</span><span>GenAI Aplicado · Clase 3</span>`;
+  s.prepend(top);
+}
+let i = 0;
+function show(n) {
+  i = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach((s, k) => { s.hidden = k !== i; s.classList.remove('active'); });
+  // doble rAF: la clase entra después de que la slide se pinta, así corren las transiciones
+  requestAnimationFrame(() => requestAnimationFrame(() => { measureChunk(slides[i]); slides[i].querySelectorAll('.pipe').forEach(p => p._reset && p._reset()); slides[i].classList.add('active'); }));
+  document.getElementById('count').textContent = `${i + 1} / ${slides.length}`;
+  history.replaceState(null, '', '#' + (i + 1));
+}
+// Posiciones del chunk animado, sin escala (offsetLeft/Top relativos a .ctxdemo).
+function measureChunk(slide) {
+  const box = slide.querySelector('.ctxdemo');
+  if (!box) return;
+  const rel = el => { let x = 0, y = 0; for (let e = el; e && e !== box; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; } return [x, y]; };
+  const set = (el, n) => { const [x, y] = rel(el); Object.entries({ x, y, w: el.offsetWidth, h: el.offsetHeight }).forEach(([k, v]) => box.style.setProperty(`--${k}${n}`, v + 'px')); };
+  set(box.querySelector('.doc .hit'), 0);
+  set(box.querySelector('.slot.empty'), 1);
+}
+function fit() {
+  const s = Math.min(innerWidth / 1280, innerHeight / 720);
+  deck.style.transform = `translate(-50%, -50%) scale(${s})`;
+}
+addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('button') && [' ', 'Enter'].includes(e.key)) return;
+  if (['ArrowRight', 'PageDown', ' '].includes(e.key)) show(i + 1);
+  else if (['ArrowLeft', 'PageUp'].includes(e.key)) show(i - 1);
+  else if (e.key === 'Home') show(0);
+  else if (e.key === 'End') show(slides.length - 1);
+});
+document.getElementById('prev').onclick = () => show(i - 1);
+document.getElementById('next').onclick = () => show(i + 1);
+const fromHash = () => show((parseInt(location.hash.slice(1)) || 1) - 1);
+addEventListener('hashchange', fromHash);
+addEventListener('resize', fit);
+fit();
+fromHash();
+
+// Slide de propiedades: "a" y "b" comparten patrón (frases similares), "c" es otro.
+{
+  const rand = s => () => (s = (s * 16807) % 2147483647) / 2147483647 * 2 - 1;
+  const ra = rand(7), rn = rand(13), rc = rand(99);
+  const a = Array.from({ length: 32 }, ra);
+  const vals = { a, b: a.map(v => Math.max(-1, Math.min(1, v + rn() * 0.25))), c: a.map(() => rc()) };
+  for (const el of document.querySelectorAll('.vec')) {
+    el.innerHTML = vals[el.dataset.v].map(v =>
+      `<i style="background:${v >= 0 ? 'rgba(196,83,43,' : 'rgba(139,58,74,'}${(0.15 + 0.85 * Math.abs(v)).toFixed(2)})"></i>`).join('');
+  }
+}
+
+// Slide de vector DBs: los logos giran en una elipse; los de "adelante" se ven más grandes.
+{
+  const box = document.getElementById('orbit'), orbs = [...box.querySelectorAll('.orb')];
+  const place = t => {
+    const w = box.clientWidth, h = box.clientHeight;
+    orbs.forEach((o, k) => {
+      const a = t / 20000 * 6.283 + k / orbs.length * 6.283;
+      const depth = (Math.sin(a) + 1) / 2;
+      const x = w / 2 + Math.cos(a) * w * 0.46, y = h / 2 + Math.sin(a) * h * 0.40;
+      o.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${0.72 + depth * 0.4})`;
+      o.style.opacity = 0.6 + depth * 0.4;
+      o.style.zIndex = Math.round(depth * 10);
+    });
+  };
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(() => place(0));
+  else (function loop(t) { if (!box.closest('.slide').hidden) place(t); requestAnimationFrame(loop); })(0);
+}
+
+// Pipelines interactivos: click en un paso o "Recorrer" para avanzar solo.
+document.querySelectorAll('.pipe').forEach(pipe => {
+  const steps = [...pipe.querySelectorAll('.pstep')], conns = [...pipe.querySelectorAll('.pconn')], infos = [...pipe.querySelectorAll('.pinfo')];
+  const play = pipe.querySelector('.pplay');
+  let timer = null;
+  const select = k => {
+    steps.forEach((st, j) => { st.classList.toggle('cur', j === k); st.classList.toggle('done', j < k); });
+    conns.forEach((c, j) => c.classList.toggle('done', j < k));
+    infos.forEach((inf, j) => inf.classList.toggle('on', j === k));
+  };
+  const stop = () => { clearInterval(timer); timer = null; play.textContent = '▶ Recorrer paso a paso'; };
+  steps.forEach((st, k) => st.onclick = () => { stop(); select(k); });
+  play.onclick = () => {
+    if (timer) return stop();
+    let k = 0; select(k); play.textContent = '❚❚ Pausar';
+    timer = setInterval(() => { if (++k >= steps.length) return stop(); select(k); }, 2200);
+  };
+  pipe._reset = () => { stop(); select(0); };
+  select(0);
+});
+
+// Diagrama de arquitectura: resaltar un flujo.
+document.querySelectorAll('.archwrap').forEach(w => {
+  const btns = w.querySelectorAll('.seg button');
+  btns.forEach(b => b.onclick = () => { w.dataset.flow = b.dataset.f; btns.forEach(x => x.classList.toggle('on', x === b)); });
+});
+
+// Portada: una query aparece y se conecta con sus vecinos más cercanos.
+const cv = document.getElementById('vecs'), ctx = cv.getContext('2d');
+ctx.scale(2, 2);
+const COLORS = ['#C4532B', '#E3A13A', '#8B3A4A'];
+const CENTERS = [[150, 150], [380, 190], [250, 380]];
+const pts = CENTERS.flatMap(([cx, cy], g) => Array.from({ length: 14 }, () => {
+  const a = Math.random() * 6.28, r = 18 + Math.random() * 72;
+  return { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r, g, ph: Math.random() * 6.28 };
+}));
+let q = null;
+function newQuery(t) {
+  const [cx, cy] = CENTERS[Math.floor(Math.random() * CENTERS.length)];
+  q = { x: cx + (Math.random() - .5) * 190, y: cy + (Math.random() - .5) * 190, t };
+}
+function draw(t) {
+  if (!q || t - q.t > 4000) newQuery(t);
+  const age = (t - q.t) / 1000;
+  const fade = age < 3.2 ? 1 : Math.max(0, 1 - (age - 3.2) / 0.8);
+  const P = pts.map(p => ({ ...p, x: p.x + Math.sin(t / 1600 + p.ph) * 5, y: p.y + Math.cos(t / 1900 + p.ph) * 5 }));
+  ctx.clearRect(0, 0, 520, 520);
+  ctx.lineWidth = 1;
+  for (let a = 0; a < P.length; a++) for (let b = a + 1; b < P.length; b++) {
+    const d = Math.hypot(P[a].x - P[b].x, P[a].y - P[b].y);
+    if (d < 75) { ctx.strokeStyle = `rgba(122,102,90,${0.45 * (1 - d / 75)})`; ctx.beginPath(); ctx.moveTo(P[a].x, P[a].y); ctx.lineTo(P[b].x, P[b].y); ctx.stroke(); }
+  }
+  const nn = P.map((p, k) => [Math.hypot(p.x - q.x, p.y - q.y), k]).sort((a, b) => a[0] - b[0]).slice(0, 4);
+  const grow = Math.min(1, Math.max(0, (age - 0.4) / 0.9));
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = `rgba(46,34,28,${0.7 * fade})`;
+  for (const [, k] of nn) { ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x + (P[k].x - q.x) * grow, q.y + (P[k].y - q.y) * grow); ctx.stroke(); }
+  for (const [k, p] of P.entries()) {
+    const hit = grow === 1 && nn.some(([, j]) => j === k);
+    ctx.fillStyle = COLORS[p.g];
+    ctx.beginPath(); ctx.arc(p.x, p.y, hit ? 8 : 6, 0, 6.28); ctx.fill();
+    if (hit) { ctx.strokeStyle = `rgba(46,34,28,${fade})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, 11, 0, 6.28); ctx.stroke(); }
+  }
+  ctx.globalAlpha = Math.min(1, age / 0.4) * fade;
+  ctx.setLineDash([4, 3]); ctx.strokeStyle = '#2E221C'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(q.x, q.y, 9 + Math.sin(age * 4) * 1.5, 0, 6.28); ctx.stroke(); ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+}
+if (matchMedia('(prefers-reduced-motion: reduce)').matches) draw(2000);
+else (function loop(t) { if (!cv.closest('.slide').hidden) draw(t); requestAnimationFrame(loop); })(0);
+</script>
+</body>
+</html>
