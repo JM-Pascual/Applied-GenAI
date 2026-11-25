@@ -710,31 +710,6 @@ emb = model.encode([<span class="s">"auto"</span>, <span class="s">"coche"</span
   <p class="note">Se corta en cada encabezado y <b>el camino de headers viaja como metadata</b>: "Reembolsos" sabe que es parte de "Baja del plan". En LangChain: <code>MarkdownHeaderTextSplitter</code>.</p>
 </section>
 
-<section class="slide" id="s-search" data-sec="07 · Querying">
-  <h2>Ejemplo: de la pregunta a la documentación</h2>
-  <div class="body">
-    <div class="flow search-flow" style="margin:4px 0 26px">
-      <div class="bubble st st1"><small>usuario</small>"¿Cómo doy de baja mi plan?"</div>
-      <span class="arrow st st2">→</span>
-      <div class="node vin st st2">Modelo de embeddings<small>el mismo que indexó</small></div>
-      <span class="arrow st st3">→</span>
-      <div class="st st3 qvec"><div class="vec" data-v="b"></div><small>vector de la pregunta · 384 dims</small></div>
-      <span class="arrow st st4">→</span>
-      <div class="node st st4 dbnode">
-        <svg viewBox="0 0 60 70" width="44" height="52" aria-hidden="true"><path d="M4 12 V58 A26 8 0 0 0 56 58 V12 Z" fill="#2E221C"/><ellipse cx="30" cy="12" rx="26" ry="8" fill="#2E221C" stroke="#FFFFFF" stroke-width="2.5"/><path d="M4 30 A26 8 0 0 0 56 30 M4 46 A26 8 0 0 0 56 46" fill="none" stroke="#FFFFFF" stroke-width="3"/></svg>
-        Vector DB<small>top-3 más cercanos</small>
-      </div>
-    </div>
-    <div class="lane t-tertiary st st5">RESULTADOS</div>
-    <div class="results">
-      <div class="res-row top st st5"><span class="rank">1</span><span class="rtag c2">baja del plan</span><span>Para dar de baja tu plan, entrá a Configuración → Suscripción. La baja se hace efectiva al final del período…</span><span class="score"><i style="width:98px"></i>0.89</span></div>
-      <div class="res-row st st6"><span class="rank">2</span><span class="rtag c1">facturación</span><span>Las facturas se emiten el día 1 de cada mes y llegan por email…</span><span class="score"><i style="width:64px"></i>0.58</span></div>
-      <div class="res-row st st7"><span class="rank">3</span><span class="rtag c4">contraseña</span><span>Si olvidaste tu contraseña, usá "Recuperar acceso"…</span><span class="score"><i style="width:23px"></i>0.21</span></div>
-    </div>
-  </div>
-  <p class="note">Todavía <b>no hay LLM</b>: devolvemos documentación relevante, no una respuesta redactada. Eso viene con RAG.</p>
-</section>
-
 <section class="slide" data-sec="07 · Querying">
   <h2>Hybrid search y reranking</h2>
   <div class="body cols">
