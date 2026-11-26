@@ -963,19 +963,6 @@ Citá la fuente de cada afirmación como [n].
   <p class="note">En vivo: el LLM decide <b>cuándo y qué buscar</b> usando la búsqueda como una <b>tool</b>. Puente a la próxima clase.</p>
 </section>
 
-<section class="slide" data-sec="09 · Pipeline de RAG">
-  <h2>Cuando falla, ¿dónde mirar?</h2>
-  <div class="body cols" style="--n:3">
-    <div class="card"><h3 class="t-tertiary">No lo encontró</h3><p>Chunking, modelo de embeddings o falta búsqueda híbrida.</p></div>
-    <div class="card"><h3 class="t-tertiary">Lo encontró, quedó abajo</h3><p>Falta reranking, o el k es muy chico.</p></div>
-    <div class="card"><h3 class="t-tertiary">Lo tenía y lo ignoró</h3><p>Prompt, demasiado contexto o modelo débil.</p></div>
-  </div>
-  <div class="card key" style="margin-top:8px">
-    <h3 class="t-primary">Evaluar de punta a punta</h3>
-    <p><b>Faithfulness</b> (¿se apoya en el contexto?) · <b>Relevancia</b> de la respuesta · <b>LLM-as-judge</b> · frameworks como <b>RAGAS</b>.</p>
-  </div>
-</section>
-
 <!-- Carátula MCP -->
 <section class="slide cover mcp-cover">
   <svg class="hub" viewBox="0 0 520 520" aria-hidden="true">
