@@ -294,6 +294,13 @@ th { font-weight: 600; color: var(--tertiary); background: var(--surface); }
 .qc.hypo { border-style: dashed; border-color: var(--tertiary); background: #F7ECEE; font-size: 14px; line-height: 1.4; }
 .qc.hypo small { display: block; font: 600 11px var(--font-code); letter-spacing: .04em; color: var(--tertiary); margin-bottom: 2px; }
 .qa { font-size: 13px; color: var(--text-muted); }
+.thanks-viz { position: absolute; right: 70px; top: 100px; width: 520px; height: 520px; }
+.thanks-viz .tklink { stroke: #2E221C; stroke-width: 2; stroke-dasharray: 6 6; stroke-linecap: round; }
+.slide.active .thanks-viz .tklink { animation: spokeflow 1.2s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .slide.active .thanks-viz .tklink { animation: none; } }
+.thanks-viz .tkq { fill: #FFFFFF; stroke: #2E221C; stroke-width: 2.5; stroke-dasharray: 5 4; }
+.thanks-viz .tkql { font: 600 18px var(--font-body); fill: var(--text); text-anchor: start; }
+.thanks-viz .tkl { font: 600 17px var(--font-title); text-anchor: middle; }
 .corner { position: absolute; font: 15px var(--font-code); color: var(--text-muted); }
 .corner.mark { width: 36px; height: 36px; border: 0 solid var(--primary); }
 .dots { position: absolute; width: 132px; height: 60px; background: radial-gradient(circle, #D6BFA6 2.5px, transparent 3px) 0 0 / 22px 20px; }
@@ -1147,6 +1154,23 @@ mcp = MCPServer(<span class="s">"ayuda"</span>)
     </svg>
   </div>
   <p class="note">Sin MCP: 4 agentes × 3 sistemas = <b>12 conectores</b>. Con MCP: cada sistema se conecta <b>una vez</b> y todos los agentes usan el mismo servidor. Un cambio (otro modelo de embeddings, un permiso) se hace <b>en un solo lugar</b>.</p>
+</section>
+
+<!-- Cierre -->
+<section class="slide cover thanks">
+  <svg class="thanks-viz" viewBox="0 0 520 520" aria-hidden="true">
+    <line class="tklink" x1="260" y1="250" x2="194.0" y2="144.5"/><line class="tklink" x1="260" y1="250" x2="334.6" y2="190.1"/><line class="tklink" x1="260" y1="250" x2="225.7" y2="346.7"/><circle cx="143.0" cy="180.0" r="6" fill="#C4532B"/><circle cx="110.6" cy="171.3" r="6" fill="#C4532B"/><circle cx="127.9" cy="127.8" r="6" fill="#C4532B"/><circle cx="194.0" cy="144.5" r="6" fill="#C4532B"/><circle cx="138.5" cy="165.2" r="6" fill="#C4532B"/><circle cx="176.6" cy="139.0" r="6" fill="#C4532B"/><circle cx="159.1" cy="108.4" r="6" fill="#C4532B"/><circle cx="126.4" cy="123.7" r="6" fill="#C4532B"/><circle cx="103.1" cy="98.3" r="6" fill="#C4532B"/><circle cx="90.9" cy="132.8" r="6" fill="#C4532B"/><circle cx="131.9" cy="125.0" r="6" fill="#C4532B"/><circle cx="194.0" cy="144.5" r="11" fill="none" stroke="#2E221C" stroke-width="2"/><circle cx="392.2" cy="127.7" r="6" fill="#8B3A4A"/><circle cx="385.1" cy="184.7" r="6" fill="#8B3A4A"/><circle cx="414.4" cy="142.6" r="6" fill="#8B3A4A"/><circle cx="379.1" cy="114.9" r="6" fill="#8B3A4A"/><circle cx="377.0" cy="113.3" r="6" fill="#8B3A4A"/><circle cx="348.6" cy="202.2" r="6" fill="#8B3A4A"/><circle cx="334.6" cy="190.1" r="6" fill="#8B3A4A"/><circle cx="403.5" cy="157.1" r="6" fill="#8B3A4A"/><circle cx="406.0" cy="188.4" r="6" fill="#8B3A4A"/><circle cx="424.1" cy="162.5" r="6" fill="#8B3A4A"/><circle cx="370.1" cy="149.7" r="6" fill="#8B3A4A"/><circle cx="334.6" cy="190.1" r="11" fill="none" stroke="#2E221C" stroke-width="2"/><circle cx="217.5" cy="398.5" r="6" fill="#B87A16"/><circle cx="225.1" cy="433.9" r="6" fill="#B87A16"/><circle cx="200.5" cy="371.0" r="6" fill="#B87A16"/><circle cx="225.7" cy="346.7" r="6" fill="#B87A16"/><circle cx="288.2" cy="351.7" r="6" fill="#B87A16"/><circle cx="239.6" cy="380.8" r="6" fill="#B87A16"/><circle cx="288.6" cy="353.7" r="6" fill="#B87A16"/><circle cx="284.1" cy="376.7" r="6" fill="#B87A16"/><circle cx="244.6" cy="376.5" r="6" fill="#B87A16"/><circle cx="270.4" cy="363.8" r="6" fill="#B87A16"/><circle cx="246.3" cy="416.6" r="6" fill="#B87A16"/><circle cx="225.7" cy="346.7" r="11" fill="none" stroke="#2E221C" stroke-width="2"/><text class="tkl" x="140" y="60" fill="#C4532B">Embeddings</text><text class="tkl" x="390" y="90" fill="#8B3A4A">RAG</text><text class="tkl" x="250" y="486" fill="#B87A16">MCP</text>
+    <circle class="tkq" cx="260" cy="250" r="14"/>
+    <text class="tkql" x="282" y="262">¿Preguntas?</text>
+  </svg>
+  <div class="corner mark" style="top:40px;left:40px;border-top-width:3px;border-left-width:3px"></div>
+  <span class="corner" style="top:52px;left:96px">cos(clase, vos) ≈ 1</span>
+  <p class="kicker">GenAI Aplicado · Clase 3</p>
+  <h1>¡Muchas gracias!</h1>
+  <p class="sub">Búsqueda semántica · RAG · MCP</p>
+  <p class="sub" style="margin-top:28px;font-size:20px">Slides: <span class="t-primary">jm-pascual.github.io/Applied-GenAI/clase-3</span></p>
+  <span class="corner" style="bottom:52px;right:96px">top-k = todos ustedes</span>
+  <div class="corner mark" style="bottom:40px;right:40px;border-bottom-width:3px;border-right-width:3px"></div>
 </section>
 
 </main>
